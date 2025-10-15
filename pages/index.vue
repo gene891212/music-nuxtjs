@@ -3,6 +3,10 @@ import { Search, Cast, User, ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
 
+const { getSongs } = useDatabase()
+const songs = await getSongs()
+console.log(songs)
+
 const { quickPicks, newReleases, categories } = useMockData()
 const router = useRouter()
 const playerStore = usePlayerStore()
