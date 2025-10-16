@@ -4,51 +4,57 @@ export const useMockData = () => {
   const quickPicks: Song[] = [
     {
       id: 1,
-      title: '夏日微風',
+      title: 'Lemon',
       artist: 'Kenshi Yonezu 米津玄師',
       duration: 225, // 3:45
       album: 'STRAY SHEEP',
       thumbnail: 'https://images.unsplash.com/photo-1644855640845-ab57a047320e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: 'SX_ViT4Ra7k', // 米津玄師 MV - Lemon
     },
     {
       id: 2,
-      title: 'あてもなく',
-      artist: 'Aimer • 瑞浪次郎',
+      title: 'Sparkle',
+      artist: 'RADWIMPS',
       duration: 270, // 4:30
-      album: 'DAWN',
+      album: 'Your Name OST',
       thumbnail: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: 'a2GujJZfXpg', // RADWIMPS - Sparkle
     },
     {
       id: 3,
-      title: 'メリーゴーランド',
-      artist: 'aimyon • 瑞浪次郎',
+      title: 'Marigold',
+      artist: 'aimyon',
       duration: 298, // 4:58
       album: 'Marigold',
       thumbnail: 'https://images.unsplash.com/photo-1580656449278-e8381933522c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: '0xSiBpUdW4E', // aimyon - Marigold
     },
     {
       id: 4,
-      title: 'Avid',
-      artist: 'Hiroyuki Sawano 澤野弘之',
+      title: 'Unravel',
+      artist: 'TK from Ling tosite sigure',
       duration: 312, // 5:12
-      album: 'PIANOHTA',
+      album: 'Unravel',
       thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: 'QKXi08chD2E', // TK - unravel
     },
     {
       id: 5,
-      title: '僕らはそれを愛と呼んだ',
-      artist: 'ATARAYO • 瑞浪次郎',
+      title: 'Pretender',
+      artist: 'Official HIGE DANdism',
       duration: 235, // 3:55
-      album: 'HEART',
+      album: 'Traveler',
       thumbnail: 'https://images.unsplash.com/photo-1542492688-75a823ab9f76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: 'TQ8WlA2GXbk', // Official HIGE DANdism - Pretender
     },
     {
       id: 6,
-      title: 'Akuta',
-      artist: 'ReoNa • 瑞浪次郎',
+      title: 'LOSER',
+      artist: 'Kenshi Yonezu 米津玄師',
       duration: 253, // 4:13
-      album: 'HEART',
+      album: 'Bremen',
       thumbnail: 'https://images.unsplash.com/photo-1576514129883-2f1d47a65da6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      youtubeId: 'Dx_fKPBPYUI', // 米津玄師 MV - LOSER
     },
   ]
 

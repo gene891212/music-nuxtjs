@@ -9,12 +9,9 @@ console.log(songs)
 
 const { quickPicks, newReleases, categories } = useMockData()
 const router = useRouter()
-const playerStore = usePlayerStore()
 
 const playSong = (song: any) => {
-  playerStore.setQueue(quickPicks)
-  playerStore.playSong(song)
-  router.push('/player')
+  router.push(`/player/${song.id}`)
 }
 </script>
 

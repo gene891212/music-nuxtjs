@@ -3,21 +3,37 @@ import {
   ChevronLeft,
   Play,
   Pause,
-  SkipBack,
-  SkipForward,
-  Volume2,
   Heart,
   Share2,
   MoreVertical,
 } from 'lucide-vue-next'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
-import Slider from '~/components/ui/Slider.vue'
 
 const router = useRouter()
-const playerStore = usePlayerStore()
-const { lyrics } = useMockData()
+const route = useRoute()
+const { quickPicks: songs, lyrics } = useMockData()
+
+// 從路由參數取得歌曲 ID
+const songId = computed(() => Number(route.params.id))
+
+// 找到當前歌曲
+const currentSong = computed(() => 
+  songs.find(s => s.id === songId.value)
+)
+
+// 404 處理：如果找不到歌曲，導回首頁
+watch(currentSong, (song) => {
+  if (!song) {
+    console.warn(`Song with ID ${songId.value} not found`)
+    router.push('/')
+  }
+}, { immediate: true })
+
+// 播放狀態管理（頁面內的 local state）
+const isPlaying = ref(false)
+const youtubePlayerRef = ref<any>(null)
 
 const activeTab = ref('lyrics')
 const tabs = ['歌詞', '相關內容', '留言']
@@ -27,19 +43,36 @@ const handleBack = () => {
 }
 
 const togglePlayPause = () => {
-  playerStore.togglePlayPause()
+  if (!youtubePlayerRef.value) return
+  
+  if (isPlaying.value) {
+    youtubePlayerRef.value.pauseVideo()
+  } else {
+    youtubePlayerRef.value.playVideo()
+  }
+  isPlaying.value = !isPlaying.value
 }
 
-const currentSong = computed(() => playerStore.currentSong)
-const isPlaying = computed(() => playerStore.isPlaying)
-const volume = computed({
-  get: () => playerStore.volume,
-  set: (value) => playerStore.setVolume(value),
-})
-const progress = computed({
-  get: () => playerStore.progress,
-  set: (value) => playerStore.setProgress(value),
-})
+// YouTube Player 事件處理
+const onPlayerReady = (player: any) => {
+  console.log('YouTube Player Ready:', player)
+  youtubePlayerRef.value = player
+}
+
+const onPlayerStateChange = (state: any) => {
+  console.log('YouTube Player State Changed:', state)
+  // 同步播放狀態
+  // YT.PlayerState.PLAYING = 1, PAUSED = 2
+  if (state === 1) {
+    isPlaying.value = true
+  } else if (state === 2 || state === 0) {
+    isPlaying.value = false
+  }
+}
+
+const onTimeUpdate = () => {
+  // 時間更新由 YouTube 控制列處理
+}
 </script>
 
 <template>
@@ -71,8 +104,18 @@ const progress = computed({
       <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Video Section -->
         <div class="flex-1 bg-black flex items-center justify-center relative">
-          <!-- Video Placeholder -->
-          <div class="absolute inset-0">
+          <!-- YouTube Player -->
+          <YouTubePlayer
+            v-if="currentSong?.youtubeId"
+            :video-id="currentSong.youtubeId"
+            :autoplay="false"
+            @ready="onPlayerReady"
+            @state-change="onPlayerStateChange"
+            @time-update="onTimeUpdate"
+          />
+          
+          <!-- Fallback for songs without YouTube ID -->
+          <div v-else class="absolute inset-0">
             <NuxtImg
               v-if="currentSong"
               :src="currentSong.thumbnail"
@@ -113,57 +156,23 @@ const progress = computed({
             </div>
           </div>
 
-          <!-- Progress Bar -->
-          <div class="mb-4">
-            <Slider v-model="progress" :min="0" :max="100" />
-            <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
-              <span>{{ formatDuration((currentSong?.duration || 0) * progress / 100) }}</span>
-              <span>{{ formatDuration(currentSong?.duration || 0) }}</span>
-            </div>
-          </div>
-
-          <!-- Playback Controls -->
-          <div class="flex items-center justify-center gap-4">
+          <!-- Playback Controls (只有播放/暫停按鈕) -->
+          <div class="flex items-center justify-center gap-6">
             <Button
               variant="ghost"
               size="icon"
-              :disabled="!playerStore.hasPreviousSong"
-              @click="playerStore.previousSong()"
-            >
-              <SkipBack class="w-6 h-6" />
-            </Button>
-            
-            <Button
-              variant="default"
-              size="lg"
-              class="h-14 w-14"
+              class="h-16 w-16"
               @click="togglePlayPause"
             >
-              <Play v-if="!isPlaying" class="w-6 h-6" />
-              <Pause v-else class="w-6 h-6" />
+              <Play v-if="!isPlaying" class="w-8 h-8" />
+              <Pause v-else class="w-8 h-8" />
             </Button>
-            
-            <Button
-              variant="ghost"
-              size="icon"
-              :disabled="!playerStore.hasNextSong"
-              @click="playerStore.nextSong()"
-            >
-              <SkipForward class="w-6 h-6" />
-            </Button>
-          </div>
-
-          <!-- Volume Control -->
-          <div class="flex items-center gap-3 mt-4">
-            <Volume2 class="w-5 h-5 text-gray-500 flex-shrink-0" />
-            <Slider v-model="volume" :min="0" :max="100" class="flex-1" />
-            <span class="text-sm text-gray-500 w-12 text-right">{{ volume }}%</span>
           </div>
         </div>
       </div>
 
       <!-- Right Side - Lyrics and Tabs -->
-      <div class="w-96 border-l border-gray-200 flex flex-col bg-white">
+      <div class="flex-1 border-l border-gray-200 flex flex-col bg-white">
         <!-- Tabs -->
         <div class="flex items-center border-b border-gray-200">
           <button
