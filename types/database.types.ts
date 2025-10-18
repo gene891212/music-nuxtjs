@@ -41,35 +41,41 @@ export type Database = {
     Tables: {
       lyrics: {
         Row: {
+          created_at: string
           language_code: string
-          lines: Json
+          lines: Json | null
           lyrics_id: number
           song_id: number
           source: string | null
           timestamps: Json | null
           translator: string | null
+          updated_at: string
         }
         Insert: {
+          created_at?: string
           language_code: string
-          lines: Json
+          lines?: Json | null
           lyrics_id?: never
           song_id: number
           source?: string | null
           timestamps?: Json | null
           translator?: string | null
+          updated_at?: string
         }
         Update: {
+          created_at?: string
           language_code?: string
-          lines?: Json
+          lines?: Json | null
           lyrics_id?: never
           song_id?: number
           source?: string | null
           timestamps?: Json | null
           translator?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "lyrics_song_id_fkey"
+            foreignKeyName: "fk_lyrics_song_id"
             columns: ["song_id"]
             isOneToOne: false
             referencedRelation: "songs"
@@ -79,32 +85,38 @@ export type Database = {
       }
       song_translations: {
         Row: {
+          created_at: string
           language_code: string
           song_id: number
           source: string | null
           title: string
           translation_id: number
           translator: string | null
+          updated_at: string
         }
         Insert: {
+          created_at?: string
           language_code: string
           song_id: number
           source?: string | null
           title: string
           translation_id?: never
           translator?: string | null
+          updated_at?: string
         }
         Update: {
+          created_at?: string
           language_code?: string
           song_id?: number
           source?: string | null
           title?: string
           translation_id?: never
           translator?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "song_translations_song_id_fkey"
+            foreignKeyName: "fk_song_translations_song_id"
             columns: ["song_id"]
             isOneToOne: false
             referencedRelation: "songs"
@@ -118,9 +130,12 @@ export type Database = {
           arranger: string | null
           artist: string | null
           composer: string | null
+          created_at: string
           default_language_code: string | null
           lyricist: string | null
           song_id: number
+          title: string
+          updated_at: string
           youtube_video_id: string | null
         }
         Insert: {
@@ -128,9 +143,12 @@ export type Database = {
           arranger?: string | null
           artist?: string | null
           composer?: string | null
+          created_at?: string
           default_language_code?: string | null
           lyricist?: string | null
           song_id?: never
+          title: string
+          updated_at?: string
           youtube_video_id?: string | null
         }
         Update: {
@@ -138,9 +156,12 @@ export type Database = {
           arranger?: string | null
           artist?: string | null
           composer?: string | null
+          created_at?: string
           default_language_code?: string | null
           lyricist?: string | null
           song_id?: never
+          title?: string
+          updated_at?: string
           youtube_video_id?: string | null
         }
         Relationships: []

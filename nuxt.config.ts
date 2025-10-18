@@ -2,10 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  
+
   // SPA 模式 - 未來要改成 SSR 只需將此行改為 true 或刪除
   ssr: false,
-  
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/supabase',
   ],
-  
+
   // Supabase 配置
   supabase: {
     redirect: false, // 禁用自動重定向（根據需求可調整）
@@ -42,7 +42,5 @@ export default defineNuxtConfig({
     ],
   },
 
-  image: {
-    domains: ['images.unsplash.com'],
-  },
+  image: {},
 })

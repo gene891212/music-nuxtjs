@@ -20,7 +20,7 @@ const songId = computed(() => Number(route.params.id))
 
 // 找到當前歌曲
 const currentSong = computed(() => 
-  songs.find(s => s.id === songId.value)
+  songs.find(s => s.song_id === songId.value)
 )
 
 // 404 處理：如果找不到歌曲，導回首頁
@@ -106,8 +106,8 @@ const onTimeUpdate = () => {
         <div class="flex-1 bg-black flex items-center justify-center relative">
           <!-- YouTube Player -->
           <YouTubePlayer
-            v-if="currentSong?.youtubeId"
-            :video-id="currentSong.youtubeId"
+            v-if="currentSong?.youtube_video_id"
+            :video-id="currentSong.youtube_video_id"
             :autoplay="false"
             @ready="onPlayerReady"
             @state-change="onPlayerStateChange"
@@ -116,13 +116,7 @@ const onTimeUpdate = () => {
           
           <!-- Fallback for songs without YouTube ID -->
           <div v-else class="absolute inset-0">
-            <NuxtImg
-              v-if="currentSong"
-              :src="currentSong.thumbnail"
-              :alt="currentSong.title"
-              class="w-full h-full object-cover opacity-70"
-            />
-            <div v-else class="w-full h-full bg-gray-900" />
+            <div class="w-full h-full bg-gray-900" />
             
             <!-- Video overlay with text -->
             <div class="absolute inset-0 flex items-center justify-center">

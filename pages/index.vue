@@ -4,15 +4,11 @@ import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
 
 const { getSongs } = useDatabase()
+const { getThumbnail } = useYouTube()
 const songs = await getSongs()
 console.log(songs)
 
 const { quickPicks, newReleases, categories } = useMockData()
-const router = useRouter()
-
-const playSong = (song: any) => {
-  router.push(`/player/${song.id}`)
-}
 </script>
 
 <template>
@@ -87,27 +83,27 @@ const playSong = (song: any) => {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div
+          <NuxtLink
             v-for="song in quickPicks"
-            :key="song.id"
+            :key="song.song_id"
+            :to="`/player/${song.song_id}`"
             class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-all cursor-pointer group"
-            @click="playSong(song)"
           >
             <div class="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
-              <NuxtImg
-                :src="song.thumbnail"
-                :alt="song.title"
+              <img
+                :src="getThumbnail(song.youtube_video_id, 'mq')"
+                :alt="song.artist || 'Song thumbnail'"
                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
-              />
+              >
             </div>
             <div class="flex-1 min-w-0">
               <h3 class="text-gray-900 font-medium truncate">{{ song.title }}</h3>
               <p class="text-sm text-gray-500 truncate">
-                {{ song.artist }} • {{ formatDuration(song.duration) }} • {{ song.album }}
+                {{ song.album_title || '未知專輯' }} • {{ song.artist || '未知歌手' }}
               </p>
             </div>
-          </div>
+          </NuxtLink>
         </div>
       </section>
 
@@ -127,23 +123,23 @@ const playSong = (song: any) => {
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          <div
+          <NuxtLink
             v-for="album in newReleases"
             :key="album.id"
-            class="group cursor-pointer"
-            @click="playSong(quickPicks[0])"
+            :to="`/player/${quickPicks[0]?.song_id || 1}`"
+            class="group cursor-pointer block"
           >
             <div class="aspect-square rounded-lg overflow-hidden mb-3 shadow-soft hover:shadow-hard transition-all duration-300">
-              <NuxtImg
+              <img
                 :src="album.image"
                 :alt="album.title"
                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
-              />
+              >
             </div>
             <h3 class="text-gray-900 font-medium truncate mb-1">{{ album.title }}</h3>
             <p class="text-sm text-gray-500 truncate">{{ album.artist }}</p>
-          </div>
+          </NuxtLink>
         </div>
       </section>
     </main>

@@ -1,60 +1,90 @@
-import type { Song, Album, Category } from '~/types'
+import type { Album, Category } from '~/types'
+import type { Database } from '~/types/database.types'
+
+// 使用資料庫的 Song 型別
+type Song = Database['public']['Tables']['songs']['Row']
+
+const nowIso = new Date().toISOString()
 
 export const useMockData = () => {
   const quickPicks: Song[] = [
     {
-      id: 1,
+      song_id: 1,
       title: 'Lemon',
       artist: 'Kenshi Yonezu 米津玄師',
-      duration: 225, // 3:45
-      album: 'STRAY SHEEP',
-      thumbnail: 'https://images.unsplash.com/photo-1644855640845-ab57a047320e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: 'SX_ViT4Ra7k', // 米津玄師 MV - Lemon
+      album_title: 'STRAY SHEEP',
+      youtube_video_id: 'SX_ViT4Ra7k', // 米津玄師 MV - Lemon
+      composer: 'Kenshi Yonezu',
+      lyricist: 'Kenshi Yonezu',
+      arranger: 'Kenshi Yonezu',
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
     {
-      id: 2,
+      song_id: 2,
       title: 'Sparkle',
       artist: 'RADWIMPS',
-      duration: 270, // 4:30
-      album: 'Your Name OST',
-      thumbnail: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: 'a2GujJZfXpg', // RADWIMPS - Sparkle
+      album_title: 'Your Name OST',
+      youtube_video_id: 'a2GujJZfXpg', // RADWIMPS - Sparkle
+      composer: 'Yojiro Noda',
+      lyricist: 'Yojiro Noda',
+      arranger: 'RADWIMPS',
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
     {
-      id: 3,
+      song_id: 3,
       title: 'Marigold',
       artist: 'aimyon',
-      duration: 298, // 4:58
-      album: 'Marigold',
-      thumbnail: 'https://images.unsplash.com/photo-1580656449278-e8381933522c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: '0xSiBpUdW4E', // aimyon - Marigold
+      album_title: 'Marigold',
+      youtube_video_id: '0xSiBpUdW4E', // aimyon - Marigold
+      composer: 'aimyon',
+      lyricist: 'aimyon',
+      arranger: null,
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
     {
-      id: 4,
+      song_id: 4,
       title: 'Unravel',
       artist: 'TK from Ling tosite sigure',
-      duration: 312, // 5:12
-      album: 'Unravel',
-      thumbnail: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: 'QKXi08chD2E', // TK - unravel
+      album_title: 'Unravel',
+      youtube_video_id: 'QKXi08chD2E', // TK - unravel
+      composer: 'TK',
+      lyricist: 'TK',
+      arranger: 'TK',
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
     {
-      id: 5,
+      song_id: 5,
       title: 'Pretender',
       artist: 'Official HIGE DANdism',
-      duration: 235, // 3:55
-      album: 'Traveler',
-      thumbnail: 'https://images.unsplash.com/photo-1542492688-75a823ab9f76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: 'TQ8WlA2GXbk', // Official HIGE DANdism - Pretender
+      album_title: 'Traveler',
+      youtube_video_id: 'TQ8WlA2GXbk', // Official HIGE DANdism - Pretender
+      composer: 'Satoshi Fujihara',
+      lyricist: 'Satoshi Fujihara',
+      arranger: 'Official HIGE DANdism',
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
     {
-      id: 6,
+      song_id: 6,
       title: 'LOSER',
       artist: 'Kenshi Yonezu 米津玄師',
-      duration: 253, // 4:13
-      album: 'Bremen',
-      thumbnail: 'https://images.unsplash.com/photo-1576514129883-2f1d47a65da6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
-      youtubeId: 'Dx_fKPBPYUI', // 米津玄師 MV - LOSER
+      album_title: 'Bremen',
+      youtube_video_id: 'Dx_fKPBPYUI', // 米津玄師 MV - LOSER
+      composer: 'Kenshi Yonezu',
+      lyricist: 'Kenshi Yonezu',
+      arranger: 'Kenshi Yonezu',
+      default_language_code: 'ja',
+      created_at: nowIso,
+      updated_at: nowIso,
     },
   ]
 
@@ -64,42 +94,42 @@ export const useMockData = () => {
       title: 'Pastoral',
       artist: '聖恩 • Aimer',
       type: 'album',
-      image: 'https://images.unsplash.com/photo-1644855640845-ab57a047320e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/SX_ViT4Ra7k/hqdefault.jpg', // YouTube 縮圖
     },
     {
       id: 2,
       title: '夏至',
       artist: '聖恩 • YOASOBI',
       type: 'single',
-      image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/a2GujJZfXpg/hqdefault.jpg',
     },
     {
       id: 3,
       title: 'PIANOHTA',
       artist: '聖恩 • Hiroyuki Sawano 澤野弘之',
       type: 'album',
-      image: 'https://images.unsplash.com/photo-1542492688-75a823ab9f76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/0xSiBpUdW4E/hqdefault.jpg',
     },
     {
       id: 4,
       title: 'HEART',
       artist: '聖恩 • ReoNa',
       type: 'album',
-      image: 'https://images.unsplash.com/photo-1576514129883-2f1d47a65da6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/QKXi08chD2E/hqdefault.jpg',
     },
     {
       id: 5,
       title: 'GUILTY CROWN suite',
       artist: 'EP • Hiroyuki Sawano 澤野弘之',
       type: 'EP',
-      image: 'https://images.unsplash.com/photo-1580656449278-e8381933522c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/TQ8WlA2GXbk/hqdefault.jpg',
     },
     {
       id: 6,
       title: 'Attack on Titan suite',
       artist: 'EP • Hiroyuki Sawano 澤野弘之',
       type: 'EP',
-      image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400',
+      image: 'https://i.ytimg.com/vi/Dx_fKPBPYUI/hqdefault.jpg',
     },
   ]
 
