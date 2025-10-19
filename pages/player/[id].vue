@@ -35,8 +35,8 @@ watch(currentSong, (song) => {
 const isPlaying = ref(false)
 const youtubePlayerRef = ref<any>(null)
 
-const activeTab = ref('lyrics')
-const tabs = ['歌詞', '相關內容', '留言']
+const activeTab = ref('歌詞')
+const tabs = ['歌詞', '留言']
 
 const handleBack = () => {
   router.push('/')
@@ -76,9 +76,9 @@ const onTimeUpdate = () => {
 </script>
 
 <template>
-  <div class="h-screen bg-white flex flex-col overflow-hidden">
+  <div class="h-screen bg-gray-50 flex flex-col overflow-hidden">
     <!-- Header -->
-    <header class="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+    <header class="flex items-center justify-between px-8 py-3 bg-white border-b border-gray-200 flex-shrink-0">
       <Button variant="ghost" size="icon" @click="handleBack">
         <ChevronLeft class="w-6 h-6" />
       </Button>
@@ -99,11 +99,11 @@ const onTimeUpdate = () => {
     </header>
 
     <!-- Main Content -->
-    <div class="flex-1 flex overflow-hidden">
+    <div class="flex-1 flex overflow-hidden gap-6 p-6 max-w-[1800px] mx-auto w-full">
       <!-- Left Side - Video Player and Controls -->
-      <div class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex-1 flex flex-col overflow-hidden bg-white rounded-xl shadow-sm">
         <!-- Video Section -->
-        <div class="flex-1 bg-black flex items-center justify-center relative">
+        <div class="aspect-video bg-black flex items-center justify-center relative rounded-t-xl overflow-hidden">
           <!-- YouTube Player -->
           <YouTubePlayer
             v-if="currentSong?.youtube_video_id"
@@ -129,18 +129,31 @@ const onTimeUpdate = () => {
         </div>
 
         <!-- Controls Section -->
-        <div class="p-6 bg-white border-t border-gray-200">
+        <div class="p-8 bg-white">
           <!-- Song Info -->
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center justify-between mb-6">
             <div class="flex-1 min-w-0">
-              <h2 class="text-xl font-semibold text-gray-900 truncate">
+              <h2 class="text-2xl font-semibold text-gray-900 truncate mb-1">
                 {{ currentSong?.title || '未播放歌曲' }}
               </h2>
-              <p class="text-sm text-gray-500 truncate">
+              <p class="text-base text-gray-500 truncate mb-3">
                 {{ currentSong?.artist || '未知藝人' }}
               </p>
+              
+              <!-- Additional Info: Composer, Lyricist, Arranger -->
+              <div class="mt-3 space-y-1.5">
+                <p v-if="currentSong?.composer" class="text-sm text-gray-600">
+                  <span class="font-medium">作曲：</span>{{ currentSong.composer }}
+                </p>
+                <p v-if="currentSong?.lyricist" class="text-sm text-gray-600">
+                  <span class="font-medium">作詞：</span>{{ currentSong.lyricist }}
+                </p>
+                <p v-if="currentSong?.arranger" class="text-sm text-gray-600">
+                  <span class="font-medium">編曲：</span>{{ currentSong.arranger }}
+                </p>
+              </div>
             </div>
-            <div class="flex items-center gap-2 ml-4">
+            <div class="flex items-center gap-3 ml-6">
               <Button variant="ghost" size="icon">
                 <Heart class="w-5 h-5" />
               </Button>
@@ -151,7 +164,7 @@ const onTimeUpdate = () => {
           </div>
 
           <!-- Playback Controls (只有播放/暫停按鈕) -->
-          <div class="flex items-center justify-center gap-6">
+          <div class="flex items-center justify-center gap-6 mt-4">
             <Button
               variant="ghost"
               size="icon"
@@ -166,13 +179,13 @@ const onTimeUpdate = () => {
       </div>
 
       <!-- Right Side - Lyrics and Tabs -->
-      <div class="flex-1 border-l border-gray-200 flex flex-col bg-white">
+      <div class="flex-1 flex flex-col bg-white rounded-xl shadow-sm overflow-hidden">
         <!-- Tabs -->
-        <div class="flex items-center border-b border-gray-200">
+        <div class="flex items-center border-b border-gray-200 px-2">
           <button
             v-for="tab in tabs"
             :key="tab"
-            class="flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            class="flex-1 px-6 py-4 text-sm font-medium transition-colors"
             :class="[
               activeTab === tab.toLowerCase()
                 ? 'text-gray-900 border-b-2 border-gray-900'
@@ -185,23 +198,19 @@ const onTimeUpdate = () => {
         </div>
 
         <!-- Lyrics Content -->
-        <div class="flex-1 overflow-y-auto p-6">
-          <div v-if="activeTab === '歌詞'" class="space-y-4">
+        <div class="flex-1 overflow-y-auto p-8">
+          <div v-if="activeTab === '歌詞'" class="space-y-3">
             <div
               v-for="(line, index) in lyrics"
               :key="index"
-              class="text-gray-700 leading-relaxed"
+              class="text-gray-700 leading-relaxed text-base"
               :class="{ 'text-gray-400': !line.text }"
             >
               {{ line.text || '...' }}
             </div>
           </div>
           
-          <div v-else-if="activeTab === '相關內容'" class="text-center text-gray-500 py-12">
-            <p>暫無相關內容</p>
-          </div>
-          
-          <div v-else class="text-center text-gray-500 py-12">
+          <div v-else-if="activeTab === '留言'" class="text-center text-gray-500 py-16">
             <p>暫無留言</p>
           </div>
         </div>

@@ -12,10 +12,10 @@ const { quickPicks, newReleases, categories } = useMockData()
 </script>
 
 <template>
-  <div class="min-h-screen yt-gradient">
+  <div class="min-h-screen bg-gray-50">
     <!-- Header -->
-    <header class="sticky top-0 z-50 glass border-b border-gray-200">
-      <div class="max-w-[1800px] mx-auto px-6 py-4">
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div class="max-w-[1800px] mx-auto px-8 py-3">
         <div class="flex items-center justify-between">
           <!-- Logo and Search -->
           <div class="flex items-center gap-8 flex-1">
@@ -52,7 +52,7 @@ const { quickPicks, newReleases, categories } = useMockData()
       </div>
 
       <!-- Category Tabs -->
-      <div class="max-w-[1800px] mx-auto px-6 py-3 flex items-center gap-2 overflow-x-auto">
+      <div class="max-w-[1800px] mx-auto px-8 py-2 flex items-center gap-2 overflow-x-auto">
         <Button
           v-for="(category, index) in categories"
           :key="category.id"
@@ -66,9 +66,9 @@ const { quickPicks, newReleases, categories } = useMockData()
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-[1800px] mx-auto px-6 py-8">
+    <main class="max-w-[1800px] mx-auto px-6 py-8 space-y-8">
       <!-- Quick Picks Section -->
-      <section class="mb-12">
+      <section class="bg-white rounded-xl shadow-sm p-8">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-semibold text-gray-900">歌曲快選</h2>
           <div class="flex items-center gap-2">
@@ -108,7 +108,7 @@ const { quickPicks, newReleases, categories } = useMockData()
       </section>
 
       <!-- New Releases Section -->
-      <section>
+      <section class="bg-white rounded-xl shadow-sm p-8">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-semibold text-gray-900">最新發行</h2>
           <div class="flex items-center gap-2">
