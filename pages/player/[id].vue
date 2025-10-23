@@ -1,46 +1,65 @@
-<script setup lang="ts">
+<script setup>
 import {
-  ChevronLeft,
   Play,
   Pause,
   Heart,
   Share2,
-  MoreVertical,
 } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 import Button from '~/components/ui/Button.vue'
-import Input from '~/components/ui/Input.vue'
 
 const router = useRouter()
 const route = useRoute()
-const { quickPicks: songs, lyrics } = useMockData()
+const { getSongById, getLyrics } = useDatabase()
+
+// 響應式狀態
+const currentSongData = ref(null)
+const currentLyricsData = ref([])
 
 // 從路由參數取得歌曲 ID
 const songId = computed(() => Number(route.params.id))
 
-// 找到當前歌曲
-const currentSong = computed(() => 
-  songs.find(s => s.song_id === songId.value)
-)
-
-// 404 處理：如果找不到歌曲，導回首頁
-watch(currentSong, (song) => {
-  if (!song) {
-    console.warn(`Song with ID ${songId.value} not found`)
+// 初始化資料
+const initializeData = async () => {
+  try {
+    // 直接從資料庫取單一歌曲
+    const song = await getSongById(songId.value)
+    if (!song) {
+      console.warn(`Song with ID ${songId.value} not found`)
+      router.push('/')
+      return
+    }
+    currentSongData.value = song
+    
+    // 取得當前歌曲的歌詞（使用預設語言）
+    const langCode = song.default_language_code || 'zh'
+    const lyrics = await getLyrics(songId.value, langCode)
+    
+    if (lyrics && lyrics.payload && lyrics.payload.lines) {
+      // 將 payload.lines 轉換為顯示用的格式
+      currentLyricsData.value = lyrics.payload.lines
+    } else {
+      currentLyricsData.value = []
+    }
+  } catch (error) {
+    console.error('載入資料失敗:', error)
     router.push('/')
+  }
+}
+
+// 監聽路由參數變化
+watch(songId, (newId) => {
+  if (newId) {
+    initializeData()
   }
 }, { immediate: true })
 
 // 播放狀態管理（頁面內的 local state）
 const isPlaying = ref(false)
-const youtubePlayerRef = ref<any>(null)
+const youtubePlayerRef = ref(null)
 
 const activeTab = ref('歌詞')
 const tabs = ['歌詞', '留言']
-
-const handleBack = () => {
-  router.push('/')
-}
 
 const togglePlayPause = () => {
   if (!youtubePlayerRef.value) return
@@ -54,12 +73,12 @@ const togglePlayPause = () => {
 }
 
 // YouTube Player 事件處理
-const onPlayerReady = (player: any) => {
+const onPlayerReady = (player) => {
   console.log('YouTube Player Ready:', player)
   youtubePlayerRef.value = player
 }
 
-const onPlayerStateChange = (state: any) => {
+const onPlayerStateChange = (state) => {
   console.log('YouTube Player State Changed:', state)
   // 同步播放狀態
   // YT.PlayerState.PLAYING = 1, PAUSED = 2
@@ -76,28 +95,7 @@ const onTimeUpdate = () => {
 </script>
 
 <template>
-  <div class="h-screen bg-gray-50 flex flex-col overflow-hidden">
-    <!-- Header -->
-    <header class="flex items-center justify-between px-8 py-3 bg-white border-b border-gray-200 flex-shrink-0">
-      <Button variant="ghost" size="icon" @click="handleBack">
-        <ChevronLeft class="w-6 h-6" />
-      </Button>
-      
-      <div class="flex-1 max-w-md mx-8">
-        <Input
-          placeholder="搜尋歌曲、專輯、藝人或 Podcast"
-          class="w-full"
-        />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <Button variant="ghost" size="icon">
-          <MoreVertical class="w-5 h-5" />
-        </Button>
-        <div class="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full" />
-      </div>
-    </header>
-
+  <div style="height: calc(100vh - 68px)" class="bg-gray-50 flex flex-col overflow-hidden">
     <!-- Main Content -->
     <div class="flex-1 flex overflow-hidden gap-6 p-6 max-w-[1800px] mx-auto w-full">
       <!-- Left Side - Video Player and Controls -->
@@ -106,8 +104,8 @@ const onTimeUpdate = () => {
         <div class="aspect-video bg-black flex items-center justify-center relative rounded-t-xl overflow-hidden">
           <!-- YouTube Player -->
           <YouTubePlayer
-            v-if="currentSong?.youtube_video_id"
-            :video-id="currentSong.youtube_video_id"
+            v-if="currentSongData?.youtube_video_id"
+            :video-id="currentSongData.youtube_video_id"
             :autoplay="false"
             @ready="onPlayerReady"
             @state-change="onPlayerStateChange"
@@ -121,7 +119,7 @@ const onTimeUpdate = () => {
             <!-- Video overlay with text -->
             <div class="absolute inset-0 flex items-center justify-center">
               <div class="text-center text-white">
-                <div v-if="currentSong" class="text-8xl opacity-20 mb-4">{{ currentSong.title }}</div>
+                <div v-if="currentSongData" class="text-8xl opacity-20 mb-4">{{ currentSongData.title }}</div>
                 <p class="text-xl opacity-60">Music Video</p>
               </div>
             </div>
@@ -134,22 +132,22 @@ const onTimeUpdate = () => {
           <div class="flex items-center justify-between mb-6">
             <div class="flex-1 min-w-0">
               <h2 class="text-2xl font-semibold text-gray-900 truncate mb-1">
-                {{ currentSong?.title || '未播放歌曲' }}
+                {{ currentSongData?.title || '未播放歌曲' }}
               </h2>
               <p class="text-base text-gray-500 truncate mb-3">
-                {{ currentSong?.artist || '未知藝人' }}
+                {{ currentSongData?.artist || '未知藝人' }}
               </p>
               
               <!-- Additional Info: Composer, Lyricist, Arranger -->
               <div class="mt-3 space-y-1.5">
-                <p v-if="currentSong?.composer" class="text-sm text-gray-600">
-                  <span class="font-medium">作曲：</span>{{ currentSong.composer }}
+                <p v-if="currentSongData?.composer" class="text-sm text-gray-600">
+                  <span class="font-medium">作曲：</span>{{ currentSongData.composer }}
                 </p>
-                <p v-if="currentSong?.lyricist" class="text-sm text-gray-600">
-                  <span class="font-medium">作詞：</span>{{ currentSong.lyricist }}
+                <p v-if="currentSongData?.lyricist" class="text-sm text-gray-600">
+                  <span class="font-medium">作詞：</span>{{ currentSongData.lyricist }}
                 </p>
-                <p v-if="currentSong?.arranger" class="text-sm text-gray-600">
-                  <span class="font-medium">編曲：</span>{{ currentSong.arranger }}
+                <p v-if="currentSongData?.arranger" class="text-sm text-gray-600">
+                  <span class="font-medium">編曲：</span>{{ currentSongData.arranger }}
                 </p>
               </div>
             </div>
@@ -201,10 +199,9 @@ const onTimeUpdate = () => {
         <div class="flex-1 overflow-y-auto p-8">
           <div v-if="activeTab === '歌詞'" class="space-y-3">
             <div
-              v-for="(line, index) in lyrics"
+              v-for="(line, index) in currentLyricsData"
               :key="index"
               class="text-gray-700 leading-relaxed text-base"
-              :class="{ 'text-gray-400': !line.text }"
             >
               {{ line.text || '...' }}
             </div>

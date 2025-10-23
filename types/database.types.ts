@@ -43,33 +43,30 @@ export type Database = {
         Row: {
           created_at: string
           language_code: string
-          lines: Json | null
           lyrics_id: number
+          payload: Json | null
           song_id: number
           source: string | null
-          timestamps: Json | null
           translator: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           language_code: string
-          lines?: Json | null
           lyrics_id?: never
+          payload?: Json | null
           song_id: number
           source?: string | null
-          timestamps?: Json | null
           translator?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           language_code?: string
-          lines?: Json | null
           lyrics_id?: never
+          payload?: Json | null
           song_id?: number
           source?: string | null
-          timestamps?: Json | null
           translator?: string | null
           updated_at?: string
         }

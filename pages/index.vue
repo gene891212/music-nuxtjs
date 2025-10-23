@@ -1,70 +1,50 @@
-<script setup lang="ts">
-import { Search, Cast, User, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+<script setup>
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
-import Input from '~/components/ui/Input.vue'
+import { useYouTube } from '~/composables/useYouTube'
 
 const { getSongs } = useDatabase()
 const { getThumbnail } = useYouTube()
-const songs = await getSongs()
-console.log(songs)
 
-const { quickPicks, newReleases, categories } = useMockData()
+const allSongs = ref([])
+const quickPicks = ref([])
+const newReleases = ref([])
+
+// 從陣列中隨機挑選指定數量的項目
+const getRandomItems = (items, count) => {
+  const shuffled = [...items].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+// 初始化資料
+const initializeData = async () => {
+  try {
+    const songs = await getSongs()
+    allSongs.value = Array.isArray(songs) ? songs : [songs]
+    
+    // 快選：隨機挑 6 首
+    quickPicks.value = getRandomItems(allSongs.value, 6)
+    
+    // 最新發行：按 created_at 排序，取最新的 6 首
+    newReleases.value = [...allSongs.value]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 6)
+  } catch (error) {
+    console.error('載入歌曲失敗:', error)
+  }
+}
+
+onMounted(() => {
+  initializeData()
+})
+
+useHead({
+  title: '首頁 - YouTube Music',
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <header class="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div class="max-w-[1800px] mx-auto px-8 py-3">
-        <div class="flex items-center justify-between">
-          <!-- Logo and Search -->
-          <div class="flex items-center gap-8 flex-1">
-            <!-- Logo -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center">
-                <div class="w-6 h-6 bg-white rounded-full" />
-              </div>
-              <span class="text-gray-700 font-medium text-lg">Music</span>
-            </div>
-            
-            <!-- Search -->
-            <div class="flex-1 max-w-xl">
-              <div class="relative">
-                <Search class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="搜尋歌曲、專輯、藝人或 Podcast"
-                  class="pl-12"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Icons -->
-          <div class="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
-              <Cast class="w-5 h-5" />
-            </Button>
-            <Button variant="danger" size="icon">
-              <User class="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Category Tabs -->
-      <div class="max-w-[1800px] mx-auto px-8 py-2 flex items-center gap-2 overflow-x-auto">
-        <Button
-          v-for="(category, index) in categories"
-          :key="category.id"
-          :variant="index === 0 ? 'default' : 'ghost'"
-          size="sm"
-          class="whitespace-nowrap"
-        >
-          {{ category.name }}
-        </Button>
-      </div>
-    </header>
-
     <!-- Main Content -->
     <main class="max-w-[1800px] mx-auto px-6 py-8 space-y-8">
       <!-- Quick Picks Section -->
@@ -124,21 +104,21 @@ const { quickPicks, newReleases, categories } = useMockData()
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           <NuxtLink
-            v-for="album in newReleases"
-            :key="album.id"
-            :to="`/player/${quickPicks[0]?.song_id || 1}`"
+            v-for="song in newReleases"
+            :key="song.song_id"
+            :to="`/player/${song.song_id}`"
             class="group cursor-pointer block"
           >
             <div class="aspect-square rounded-lg overflow-hidden mb-3 shadow-soft hover:shadow-hard transition-all duration-300">
               <img
-                :src="album.image"
-                :alt="album.title"
+                :src="getThumbnail(song.youtube_video_id || '', 'mq')"
+                :alt="song.title"
                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
               >
             </div>
-            <h3 class="text-gray-900 font-medium truncate mb-1">{{ album.title }}</h3>
-            <p class="text-sm text-gray-500 truncate">{{ album.artist }}</p>
+            <h3 class="text-gray-900 font-medium truncate mb-1">{{ song.title }}</h3>
+            <p class="text-sm text-gray-500 truncate">{{ song.artist || '未知歌手' }}</p>
           </NuxtLink>
         </div>
       </section>

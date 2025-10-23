@@ -101,11 +101,163 @@ export const useDatabase = () => {
     return data
   }
 
+  /**
+   * 建立新歌曲
+   */
+  const createSong = async (song: Database['public']['Tables']['songs']['Insert']) => {
+    const { data, error } = await supabase
+      .from('songs')
+      .insert([song])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('建立歌曲失敗:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  }
+
+  /**
+   * 更新歌曲資訊
+   */
+  const updateSong = async (songId: number, song: Database['public']['Tables']['songs']['Update']) => {
+    const { data, error } = await supabase
+      .from('songs')
+      .update(song)
+      .eq('song_id', songId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('更新歌曲失敗:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  }
+
+  /**
+   * 刪除歌曲及相關資料
+   */
+  const deleteSong = async (songId: number) => {
+    const { error } = await supabase
+      .from('songs')
+      .delete()
+      .eq('song_id', songId)
+
+    if (error) {
+      console.error('刪除歌曲失敗:', error)
+      return { error }
+    }
+
+    return { error: null }
+  }
+
+  /**
+   * 新增歌曲翻譯
+   */
+  const addSongTranslation = async (translation: Database['public']['Tables']['song_translations']['Insert']) => {
+    const { data, error } = await supabase
+      .from('song_translations')
+      .insert([translation])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('新增翻譯失敗:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  }
+
+  /**
+   * 新增歌詞
+   */
+  const addLyrics = async (lyrics: Database['public']['Tables']['lyrics']['Insert']) => {
+    const { data, error } = await supabase
+      .from('lyrics')
+      .insert([lyrics])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('新增歌詞失敗:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  }
+
+  /**
+   * 更新歌詞
+   */
+  const updateLyrics = async (lyricId: number, lyrics: Database['public']['Tables']['lyrics']['Update']) => {
+    const { data, error } = await supabase
+      .from('lyrics')
+      .update(lyrics)
+      .eq('lyric_id', lyricId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('更新歌詞失敗:', error)
+      return { data: null, error }
+    }
+
+    return { data, error: null }
+  }
+
+  /**
+   * 刪除歌詞
+   */
+  const deleteLyrics = async (lyricId: number) => {
+    const { error } = await supabase
+      .from('lyrics')
+      .delete()
+      .eq('lyric_id', lyricId)
+
+    if (error) {
+      console.error('刪除歌詞失敗:', error)
+      return { error }
+    }
+
+    return { error: null }
+  }
+
+  /**
+   * 根據歌曲 ID 取得所有翻譯
+   */
+  const getSongTranslations = async (songId: number) => {
+    const { data, error } = await supabase
+      .from('song_translations')
+      .select('*')
+      .eq('song_id', songId)
+      .order('language_code', { ascending: true })
+
+    if (error) {
+      console.error('獲取翻譯失敗:', error)
+      return []
+    }
+
+    return data || []
+  }
+
   return {
     getSongs,
     getSongById,
     getSongTranslation,
+    getSongTranslations,
     getLyrics,
     searchSongs,
+    createSong,
+    updateSong,
+    deleteSong,
+    addSongTranslation,
+    addLyrics,
+    updateLyrics,
+    deleteLyrics,
   }
 }
