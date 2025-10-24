@@ -74,14 +74,52 @@ export const useDatabase = () => {
       .select('*')
       .eq('song_id', songId)
       .eq('language_code', languageCode)
-      .single()
+      .order('created_at', { ascending: false }) // 取最新的
+      .limit(1)
 
     if (error) {
       console.error('獲取歌詞失敗:', error)
       return null
     }
 
-    return data
+    // 如果有資料，返回第一筆（最新的）
+    return data && data.length > 0 ? data[0] : null
+  }
+
+  /**
+   * 獲取歌曲的所有可用語言
+   */
+  const getAvailableLanguages = async (songId: number) => {
+    const { data, error } = await supabase
+      .from('lyrics')
+      .select('language_code')
+      .eq('song_id', songId)
+
+    if (error) {
+      console.error('獲取可用語言失敗:', error)
+      return []
+    }
+
+    // 去重並返回語言代碼數組
+    return data ? [...new Set(data.map(l => l.language_code))] : []
+  }
+
+  /**
+   * 獲取標題翻譯的所有可用語言
+   */
+  const getAvailableTitleLanguages = async (songId: number) => {
+    const { data, error } = await supabase
+      .from('song_translations')
+      .select('language_code')
+      .eq('song_id', songId)
+
+    if (error) {
+      console.error('獲取標題翻譯語言失敗:', error)
+      return []
+    }
+
+    // 去重並返回語言代碼數組
+    return data ? [...new Set(data.map(t => t.language_code))] : []
   }
 
   /**
@@ -251,6 +289,8 @@ export const useDatabase = () => {
     getSongTranslation,
     getSongTranslations,
     getLyrics,
+    getAvailableLanguages,
+    getAvailableTitleLanguages,
     searchSongs,
     createSong,
     updateSong,
