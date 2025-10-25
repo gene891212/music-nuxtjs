@@ -13,14 +13,13 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['ready', 'stateChange', 'error', 'timeUpdate'])
+const emit = defineEmits(['ready', 'stateChange', 'error'])
 
-const { initPlayer, play, pause, loadVideoById, getCurrentTime, getDuration, destroy } = useYouTubePlayer()
+const { initPlayer, play, pause, loadVideoById, destroy } = useYouTubePlayer()
 
 const playerContainerId = ref('youtube-player')
 const player = ref<YT.Player | null>(null)
 const isReady = ref(false)
-const timeUpdateInterval = ref<NodeJS.Timeout | null>(null)
 
 // 初始化播放器
 onMounted(async () => {
@@ -39,9 +38,6 @@ onMounted(async () => {
           if (props.autoplay) {
             play()
           }
-
-          // 開始時間更新輪詢
-          startTimeUpdate()
         },
         onStateChange: (event: YT.OnStateChangeEvent) => {
           const state = event.data
@@ -60,7 +56,6 @@ onMounted(async () => {
 
 // 清理
 onBeforeUnmount(() => {
-  stopTimeUpdate()
   destroy()
 })
 
@@ -70,30 +65,6 @@ watch(() => props.videoId, (newVideoId) => {
     loadVideoById(newVideoId)
   }
 })
-
-// 開始時間更新
-const startTimeUpdate = () => {
-  stopTimeUpdate()
-  
-  timeUpdateInterval.value = setInterval(() => {
-    if (!isReady.value) return
-    
-    const currentTime = getCurrentTime()
-    const duration = getDuration()
-    
-    if (duration > 0) {
-      emit('timeUpdate', currentTime, duration)
-    }
-  }, 500) // 每 500ms 更新一次
-}
-
-// 停止時間更新
-const stopTimeUpdate = () => {
-  if (timeUpdateInterval.value) {
-    clearInterval(timeUpdateInterval.value)
-    timeUpdateInterval.value = null
-  }
-}
 
 // 暴露給父元件的方法
 defineExpose({

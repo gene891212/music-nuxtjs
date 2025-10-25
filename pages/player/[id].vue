@@ -13,18 +13,15 @@ import Button from '~/components/ui/Button.vue'
 
 const router = useRouter()
 const route = useRoute()
-const { getSongById, getLyrics, getAvailableLanguages, getAvailableTitleLanguages, getSongTranslation } = useDatabase()
+const { getSongById, getAvailableTitleLanguages, getSongTranslation } = useDatabase()
 
 // 響應式狀態
 const currentSongData = ref(null)
-const currentLyricsData = ref([])
-const secondaryLyricsData = ref([]) // 第二語言歌詞
+const lyricsMap = ref({}) // { ja: [...], zh: [...], en: [...] }
 
 // 語言選擇
 const availableLanguages = ref([]) // 可用的語言列表
-const selectedLanguage = ref('') // 當前選擇的主要語言
-const secondaryLanguage = ref('') // 第二語言（對照用）
-const showDualLanguage = ref(false) // 是否顯示雙語
+const primaryLanguage = ref('ja') // 主要語言（時間軸基準）
 
 // 標題翻譯
 const availableTitleLanguages = ref([]) // 可用的標題翻譯語言
@@ -69,26 +66,25 @@ const toggleRepeatCurrentLine = () => {
   if (isRepeatCurrentLine.value) {
     // 啟用時，記住當前要重複的句子索引
     repeatLineIndex.value = highlightedLineIndex.value
-    console.log('開始重複播放第', repeatLineIndex.value, '句')
     startRepeatCheck()
   } else {
-    console.log('停止重複播放')
     repeatLineIndex.value = -1
     stopRepeatCheck()
   }
 }
 
-// 開始檢查是否需要重複播放
+// 開始檢查是否需要重複播放（基於 primaryLanguage）
 const startRepeatCheck = () => {
   if (repeatCheckIntervalId) return
   
   repeatCheckIntervalId = setInterval(() => {
-    if (!isRepeatCurrentLine.value || !youtubePlayerRef.value || !currentLyricsData.value.length) {
-      return
-    }
+    if (!isRepeatCurrentLine.value || !youtubePlayerRef.value) return
+    
+    const primaryLines = lyricsMap.value[primaryLanguage.value]
+    if (!primaryLines || !primaryLines.length) return
     
     // 檢查要重複的 index 是否有效
-    if (repeatLineIndex.value < 0 || repeatLineIndex.value >= currentLyricsData.value.length) {
+    if (repeatLineIndex.value < 0 || repeatLineIndex.value >= primaryLines.length) {
       return
     }
     
@@ -105,7 +101,7 @@ const startRepeatCheck = () => {
 // 初始化資料
 const initializeData = async () => {
   try {
-    // 直接從資料庫取單一歌曲
+    // 直接從資料庫取單一歌曲（包含所有 lyrics）
     const song = await getSongById(songId.value)
     if (!song) {
       console.warn(`Song with ID ${songId.value} not found`)
@@ -114,28 +110,47 @@ const initializeData = async () => {
     }
     currentSongData.value = song
     
-    // 獲取該歌曲的所有可用語言
-    const languages = await getAvailableLanguages(songId.value)
-    availableLanguages.value = languages
+    // 從 song.lyrics 建立 lyricsMap
+    const allLyrics = song.lyrics || []
+    const tempLyricsMap = {}
+    const languages = []
+    
+    allLyrics.forEach(lyric => {
+      if (lyric.language_code && lyric.payload?.lines) {
+        tempLyricsMap[lyric.language_code] = lyric.payload.lines
+        languages.push(lyric.language_code)
+      }
+    })
+    
+    lyricsMap.value = tempLyricsMap
+    
+    // 設定主要語言（優先 ja，其次 zh，最後用第一個）
+    if (languages.includes('ja')) {
+      primaryLanguage.value = 'ja'
+    } else if (languages.includes('zh')) {
+      primaryLanguage.value = 'zh'
+    } else if (languages.length > 0) {
+      primaryLanguage.value = languages[0]
+    }
+    
+    // 調整 availableLanguages 順序：主要語言排第一
+    const sortedLanguages = [primaryLanguage.value]
+    languages.forEach(lang => {
+      if (lang !== primaryLanguage.value) {
+        sortedLanguages.push(lang)
+      }
+    })
+    availableLanguages.value = sortedLanguages
     
     // 獲取標題翻譯的所有可用語言
     const titleLanguages = await getAvailableTitleLanguages(songId.value)
     availableTitleLanguages.value = titleLanguages
     
-    // 設置主要語言（預設語言或第一個可用語言）
-    const defaultLang = song.default_language_code || 'zh'
-    selectedLanguage.value = availableLanguages.value.includes(defaultLang) 
-      ? defaultLang 
-      : (availableLanguages.value[0] || 'zh')
-    
-    // 加載主要語言歌詞
-    await loadLyrics(selectedLanguage.value)
-    
     // 加載標題翻譯（如果有的話）
     if (availableTitleLanguages.value.length > 0) {
-      // 嘗試加載與歌詞語言相同的標題翻譯
-      const titleLang = availableTitleLanguages.value.includes(selectedLanguage.value)
-        ? selectedLanguage.value
+      // 嘗試加載與主要語言相同的標題翻譯
+      const titleLang = availableTitleLanguages.value.includes(primaryLanguage.value)
+        ? primaryLanguage.value
         : availableTitleLanguages.value[0]
       
       const translation = await getSongTranslation(songId.value, titleLang)
@@ -144,42 +159,9 @@ const initializeData = async () => {
         currentTitleTranslation.value = translation.title
       }
     }
-    
-    // 如果有日文和中文，自動設置雙語顯示
-    if (availableLanguages.value.includes('zh') && availableLanguages.value.includes('ja')) {
-      if (selectedLanguage.value === 'zh') {
-        secondaryLanguage.value = 'ja'
-      } else if (selectedLanguage.value === 'ja') {
-        secondaryLanguage.value = 'zh'
-      }
-      if (secondaryLanguage.value) {
-        await loadSecondaryLyrics(secondaryLanguage.value)
-        showDualLanguage.value = true
-      }
-    }
   } catch (error) {
     console.error('載入資料失敗:', error)
     router.push('/')
-  }
-}
-
-// 加載主要語言歌詞
-const loadLyrics = async (languageCode) => {
-  const lyrics = await getLyrics(songId.value, languageCode)
-  if (lyrics && lyrics.payload && lyrics.payload.lines) {
-    currentLyricsData.value = lyrics.payload.lines
-  } else {
-    currentLyricsData.value = []
-  }
-}
-
-// 加載第二語言歌詞
-const loadSecondaryLyrics = async (languageCode) => {
-  const lyrics = await getLyrics(songId.value, languageCode)
-  if (lyrics && lyrics.payload && lyrics.payload.lines) {
-    secondaryLyricsData.value = lyrics.payload.lines
-  } else {
-    secondaryLyricsData.value = []
   }
 }
 
@@ -192,14 +174,15 @@ watch(songId, (newId) => {
   }
 }, { immediate: true })
 
-// 計算當前應該高亮的行索引
+// 計算當前應該高亮的行索引（基於 primaryLanguage）
 const highlightedLineIndex = computed(() => {
-  if (!currentLyricsData.value.length) return -1
+  const primaryLines = lyricsMap.value[primaryLanguage.value]
+  if (!primaryLines || !primaryLines.length) return -1
   
   // 找到最後一個 start_ms <= currentTime 的行
   let index = -1
-  for (let i = 0; i < currentLyricsData.value.length; i++) {
-    const startMs = currentLyricsData.value[i].start_ms || 0
+  for (let i = 0; i < primaryLines.length; i++) {
+    const startMs = primaryLines[i].start_ms || 0
     if (currentTime.value >= startMs) {
       index = i
     } else {
@@ -227,11 +210,12 @@ const startTimeTracking = () => {
   animationFrameId = requestAnimationFrame(updateFrame)
 }
 
-// 點擊歌詞行跳轉到該時間
+// 點擊歌詞行跳轉到該時間（基於 primaryLanguage）
 const seekToLine = (lineIndex) => {
   if (!youtubePlayerRef.value) return
   
-  const line = currentLyricsData.value[lineIndex]
+  const primaryLines = lyricsMap.value[primaryLanguage.value]
+  const line = primaryLines?.[lineIndex]
   if (!line || line.start_ms === undefined) return
   
   console.log(line)
@@ -252,9 +236,12 @@ const togglePlayPause = () => {
   isPlaying.value = !isPlaying.value
 }
 
-// 跳到上一句歌詞
+// 跳到上一句歌詞（基於 primaryLanguage）
 const goToPreviousLine = () => {
-  if (!youtubePlayerRef.value || !currentLyricsData.value.length) return
+  if (!youtubePlayerRef.value) return
+  
+  const primaryLines = lyricsMap.value[primaryLanguage.value]
+  if (!primaryLines || !primaryLines.length) return
   
   const currentIndex = highlightedLineIndex.value
   const previousIndex = Math.max(0, currentIndex - 1)
@@ -264,14 +251,17 @@ const goToPreviousLine = () => {
   }
 }
 
-// 跳到下一句歌詞
+// 跳到下一句歌詞（基於 primaryLanguage）
 const goToNextLine = () => {
-  if (!youtubePlayerRef.value || !currentLyricsData.value.length) return
+  if (!youtubePlayerRef.value) return
+  
+  const primaryLines = lyricsMap.value[primaryLanguage.value]
+  if (!primaryLines || !primaryLines.length) return
   
   const currentIndex = highlightedLineIndex.value
-  const nextIndex = Math.min(currentLyricsData.value.length - 1, currentIndex + 1)
+  const nextIndex = Math.min(primaryLines.length - 1, currentIndex + 1)
   
-  if (nextIndex < currentLyricsData.value.length) {
+  if (nextIndex < primaryLines.length) {
     seekToLine(nextIndex)
   }
 }
@@ -298,10 +288,6 @@ const onPlayerStateChange = (state) => {
   }
 }
 
-const onTimeUpdate = () => {
-  // 時間更新由 RequestAnimationFrame 處理
-}
-
 // 組件卸載時清理資源
 onUnmounted(() => {
   stopTimeTracking()
@@ -324,7 +310,6 @@ onUnmounted(() => {
             :autoplay="false"
             @ready="onPlayerReady"
             @state-change="onPlayerStateChange"
-            @time-update="onTimeUpdate"
           />
           
           <!-- Fallback for songs without YouTube ID -->
@@ -387,7 +372,7 @@ onUnmounted(() => {
               variant="ghost"
               size="icon"
               class="h-12 w-12"
-              :disabled="!currentLyricsData.length || highlightedLineIndex <= 0"
+              :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex <= 0"
               @click="goToPreviousLine"
             >
               <SkipBack class="w-6 h-6" />
@@ -409,7 +394,7 @@ onUnmounted(() => {
               variant="ghost"
               size="icon"
               class="h-12 w-12"
-              :disabled="!currentLyricsData.length || highlightedLineIndex >= currentLyricsData.length - 1"
+              :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex >= (lyricsMap[primaryLanguage]?.length || 0) - 1"
               @click="goToNextLine"
             >
               <SkipForward class="w-6 h-6" />
@@ -422,7 +407,7 @@ onUnmounted(() => {
               :variant="isRepeatCurrentLine ? 'default' : 'ghost'"
               size="sm"
               class="gap-2"
-              :disabled="!currentLyricsData.length"
+              :disabled="!lyricsMap[primaryLanguage]?.length"
               @click="toggleRepeatCurrentLine"
             >
               <Repeat1 class="w-4 h-4" />
@@ -454,56 +439,31 @@ onUnmounted(() => {
         <!-- Lyrics Content -->
         <div class="flex-1 overflow-y-auto">
           <div v-if="activeTab === '歌詞'" class="p-8 space-y-3">
-            <!-- 單語模式 -->
-            <div v-if="!showDualLanguage">
+            <div
+              v-for="(_, index) in lyricsMap[primaryLanguage] || []"
+              :key="index"
+              class="transition-all duration-50 cursor-pointer p-3 rounded-lg mb-4"
+              :class="[
+                highlightedLineIndex === index
+                  ? 'bg-red-50 border-l-4 border-red-500'
+                  : 'hover:bg-gray-50'
+              ]"
+              @click="seekToLine(index)"
+            >
               <div
-                v-for="(line, index) in currentLyricsData"
-                :key="index"
-                class="text-base leading-relaxed transition-all duration-200 cursor-pointer p-2 rounded-lg"
-                :class="[
-                  highlightedLineIndex === index
-                    ? 'text-red-500 font-semibold bg-red-50'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                ]"
-                @click="seekToLine(index)"
-              >
-                {{ line.text || '...' }}
-              </div>
-            </div>
-            
-            <!-- 雙語模式 -->
-            <div v-else>
-              <div
-                v-for="(line, index) in currentLyricsData"
-                :key="index"
-                class="transition-all duration-200 cursor-pointer p-3 rounded-lg mb-4"
-                :class="[
-                  highlightedLineIndex === index
-                    ? 'bg-red-50 border-l-4 border-red-500'
-                    : 'hover:bg-gray-50'
-                ]"
-                @click="seekToLine(index)"
+                v-for="(lang, langIndex) in availableLanguages"
+                :key="lang"
+                class="mb-1 last:mb-0"
               >
                 <div
-                  class="text-base leading-relaxed mb-1"
                   :class="[
-                    highlightedLineIndex === index
-                      ? 'text-red-500 font-semibold'
-                      : 'text-gray-900'
+                    // 第一個（主要語言）用大字體粗體
+                    langIndex === 0 ? 'text-lg font-medium' : 'text-base',
+                    // 高亮時使用紅色
+                    highlightedLineIndex === index ? 'text-red-500' : 'text-gray-900'
                   ]"
                 >
-                  {{ line.text || '...' }}
-                </div>
-                <div
-                  v-if="secondaryLyricsData[index]"
-                  class="text-sm leading-relaxed"
-                  :class="[
-                    highlightedLineIndex === index
-                      ? 'text-red-400'
-                      : 'text-gray-500'
-                  ]"
-                >
-                  {{ secondaryLyricsData[index].text || '...' }}
+                  {{ lyricsMap[lang]?.[index]?.text || '' }}
                 </div>
               </div>
             </div>
