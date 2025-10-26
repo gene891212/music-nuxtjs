@@ -16,7 +16,8 @@ export const useYouTube = () => {
       // 預設佔位圖
       return 'https://via.placeholder.com/320x180?text=No+Thumbnail'
     }
-    return `https://i.ytimg.com/vi/${youtubeId}/${quality}default.jpg`
+    const qualityPrefix = quality === 'default' ? '' : quality
+    return `https://i.ytimg.com/vi_webp/${youtubeId}/${qualityPrefix}default.webp`
   }
 
   /**

@@ -46,11 +46,11 @@ useHead({
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Main Content -->
-    <main class="max-w-[1800px] mx-auto px-6 py-8 space-y-8">
+    <main class="max-w-[1800px] mx-auto px-3 py-3 md:px-6 md:py-8 space-y-3 md:space-y-8">
       <!-- Quick Picks Section -->
-      <section class="bg-white rounded-xl shadow-sm p-8">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-semibold text-gray-900">歌曲快選</h2>
+      <section class="bg-white rounded-lg md:rounded-xl shadow-sm p-3 md:p-8">
+        <div class="flex items-center justify-between mb-3 md:mb-6">
+          <h2 class="text-lg md:text-2xl font-semibold text-gray-900">歌曲快選</h2>
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500 mr-2">全部顯示</span>
             <Button variant="ghost" size="icon" class="h-8 w-8">
@@ -62,14 +62,14 @@ useHead({
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
           <NuxtLink
             v-for="song in quickPicks"
             :key="song.song_id"
             :to="`/player/${song.song_id}`"
-            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-all cursor-pointer group"
+            class="flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-lg hover:bg-gray-100 transition-all cursor-pointer group"
           >
-            <div class="relative w-12 h-12 rounded overflow-hidden flex-shrink-0">
+            <div class="relative w-10 h-10 md:w-12 md:h-12 rounded overflow-hidden flex-shrink-0">
               <img
                 :src="getThumbnail(song.youtube_video_id, 'mq')"
                 :alt="song.artist || 'Song thumbnail'"
@@ -78,8 +78,8 @@ useHead({
               >
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-gray-900 font-medium truncate">{{ song.title }}</h3>
-              <p class="text-sm text-gray-500 truncate">
+              <h3 class="text-sm md:text-base text-gray-900 font-medium truncate">{{ song.title }}</h3>
+              <p class="text-xs md:text-sm text-gray-500 truncate">
                 {{ song.album_title || '未知專輯' }} • {{ song.artist || '未知歌手' }}
               </p>
             </div>
@@ -88,9 +88,9 @@ useHead({
       </section>
 
       <!-- New Releases Section -->
-      <section class="bg-white rounded-xl shadow-sm p-8">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-semibold text-gray-900">最新發行</h2>
+      <section class="bg-white rounded-lg md:rounded-xl shadow-sm p-3 md:p-8">
+        <div class="flex items-center justify-between mb-3 md:mb-6">
+          <h2 class="text-lg md:text-2xl font-semibold text-gray-900">最新發行</h2>
           <div class="flex items-center gap-2">
             <span class="text-sm text-gray-500 mr-2">查看更多</span>
             <Button variant="ghost" size="icon" class="h-8 w-8">
@@ -102,23 +102,23 @@ useHead({
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4">
           <NuxtLink
             v-for="song in newReleases"
             :key="song.song_id"
             :to="`/player/${song.song_id}`"
             class="group cursor-pointer block"
           >
-            <div class="aspect-square rounded-lg overflow-hidden mb-3 shadow-soft hover:shadow-hard transition-all duration-300">
+            <div class="aspect-video rounded-lg overflow-hidden mb-1.5 md:mb-3 shadow-soft hover:shadow-hard transition-all duration-300">
               <img
-                :src="getThumbnail(song.youtube_video_id || '', 'mq')"
+                :src="getThumbnail(song.youtube_video_id || '', 'maxres')"
                 :alt="song.title"
                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
               >
             </div>
-            <h3 class="text-gray-900 font-medium truncate mb-1">{{ song.title }}</h3>
-            <p class="text-sm text-gray-500 truncate">{{ song.artist || '未知歌手' }}</p>
+            <h3 class="text-sm md:text-base text-gray-900 font-medium truncate mb-0.5 md:mb-1">{{ song.title }}</h3>
+            <p class="text-xs md:text-sm text-gray-500 truncate">{{ song.artist || '未知歌手' }}</p>
           </NuxtLink>
         </div>
       </section>

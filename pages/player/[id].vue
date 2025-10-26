@@ -298,11 +298,11 @@ onUnmounted(() => {
 <template>
   <div class="bg-gray-50 min-h-[calc(100vh-68px)] lg:h-[calc(100vh-68px)] flex flex-col lg:overflow-hidden">
     <!-- Main Content - Responsive Layout -->
-    <div class="flex-1 flex flex-col lg:flex-row lg:overflow-hidden gap-4 lg:gap-6 p-4 lg:p-6 max-w-[1800px] mx-auto w-full">
+    <div class="flex-1 flex flex-col lg:flex-row lg:overflow-hidden gap-2 md:gap-4 lg:gap-6 p-3 md:p-4 lg:p-6 max-w-[1800px] mx-auto w-full">
       <!-- Video Player and Controls Section -->
-      <div class="w-full lg:flex-1 flex flex-col bg-white rounded-xl shadow-sm">
+      <div class="w-full lg:flex-1 flex flex-col bg-white rounded-lg md:rounded-xl shadow-sm">
         <!-- Video Section -->
-        <div class="aspect-video bg-black flex items-center justify-center relative rounded-t-xl overflow-hidden">
+        <div class="aspect-video bg-black flex items-center justify-center relative rounded-t-lg md:rounded-t-xl overflow-hidden">
           <!-- YouTube Player -->
           <YouTubePlayer
             v-if="currentSongData?.youtube_video_id"
@@ -327,23 +327,23 @@ onUnmounted(() => {
         </div>
 
         <!-- Controls Section -->
-        <div class="p-4 md:p-6 lg:p-8 bg-white rounded-b-xl">
+        <div class="p-3 md:p-6 lg:p-8 bg-white rounded-b-lg md:rounded-b-xl">
           <!-- Song Info -->
-          <div class="flex items-start justify-between mb-4 md:mb-6">
+          <div class="flex items-start justify-between mb-3 md:mb-6">
             <div class="flex-1 min-w-0">
-              <h2 class="text-xl md:text-2xl font-semibold text-gray-900 truncate mb-1">
+              <h2 class="text-lg md:text-2xl font-semibold text-gray-900 truncate mb-0.5 md:mb-1">
                 {{ currentSongData?.title || '未播放歌曲' }}
               </h2>
               <!-- 標題翻譯 -->
-              <p v-if="currentTitleTranslation" class="text-base md:text-lg text-gray-600 truncate mb-2">
+              <p v-if="currentTitleTranslation" class="text-sm md:text-lg text-gray-600 truncate mb-1 md:mb-2">
                 {{ currentTitleTranslation }}
               </p>
-              <p class="text-sm md:text-base text-gray-500 truncate mb-3">
+              <p class="text-xs md:text-base text-gray-500 truncate mb-2 md:mb-3">
                 {{ currentSongData?.artist || '未知藝人' }}
               </p>
               
               <!-- Additional Info: Composer, Lyricist, Arranger -->
-              <div class="mt-2 md:mt-3 space-y-1 md:space-y-1.5">
+              <div class="mt-1.5 md:mt-3 space-y-0.5 md:space-y-1.5">
                 <p v-if="currentSongData?.composer" class="text-xs md:text-sm text-gray-600">
                   <span class="font-medium">作曲：</span>{{ currentSongData.composer }}
                 </p>
@@ -355,51 +355,51 @@ onUnmounted(() => {
                 </p>
               </div>
             </div>
-            <div class="flex items-center gap-2 md:gap-3 ml-4 md:ml-6">
-              <Button variant="ghost" size="icon" class="h-8 w-8 md:h-10 md:w-10">
-                <Heart class="w-4 h-4 md:w-5 md:h-5" />
+            <div class="flex items-center gap-1.5 md:gap-3 ml-2 md:ml-6">
+              <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
+                <Heart class="w-3.5 h-3.5 md:w-5 md:h-5" />
               </Button>
-              <Button variant="ghost" size="icon" class="h-8 w-8 md:h-10 md:w-10">
-                <Share2 class="w-4 h-4 md:w-5 md:h-5" />
+              <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
+                <Share2 class="w-3.5 h-3.5 md:w-5 md:h-5" />
               </Button>
             </div>
           </div>
 
           <!-- Playback Controls -->
-          <div class="flex items-center justify-center gap-4 md:gap-6 mt-3 md:mt-4">
+          <div class="flex items-center justify-center gap-3 md:gap-6 mt-2 md:mt-4">
             <!-- 上一句 -->
             <Button
               variant="ghost"
               size="icon"
-              class="h-10 w-10 md:h-12 md:w-12"
+              class="h-9 w-9 md:h-12 md:w-12"
               :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex <= 0"
               @click="goToPreviousLine"
             >
-              <SkipBack class="w-5 h-5 md:w-6 md:h-6" />
+              <SkipBack class="w-4 h-4 md:w-6 md:h-6" />
             </Button>
             
             <Button
               variant="ghost"
               size="icon"
-              class="h-12 w-12 md:h-16 md:w-16"
+              class="h-11 w-11 md:h-16 md:w-16"
               @click="togglePlayPause"
             >
-              <Play v-if="!isPlaying" class="w-6 h-6 md:w-8 md:h-8" />
-              <Pause v-else class="w-6 h-6 md:w-8 md:h-8" />
+              <Play v-if="!isPlaying" class="w-5 h-5 md:w-8 md:h-8" />
+              <Pause v-else class="w-5 h-5 md:w-8 md:h-8" />
             </Button>
             
             <Button
               variant="ghost"
               size="icon"
-              class="h-10 w-10 md:h-12 md:w-12"
+              class="h-9 w-9 md:h-12 md:w-12"
               :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex >= (lyricsMap[primaryLanguage]?.length || 0) - 1"
               @click="goToNextLine"
             >
-              <SkipForward class="w-5 h-5 md:w-6 md:h-6" />
+              <SkipForward class="w-4 h-4 md:w-6 md:h-6" />
             </Button>
           </div>
 
-          <div class="flex items-center justify-center mt-3 md:mt-4">
+          <div class="flex items-center justify-center mt-2 md:mt-4">
             <Button
               :variant="isRepeatCurrentLine ? 'default' : 'ghost'"
               size="sm"
@@ -415,13 +415,13 @@ onUnmounted(() => {
       </div>
 
       <!-- Lyrics Section - Below player on mobile, right side on desktop -->
-      <div class="w-full lg:flex-1 flex flex-col bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="w-full lg:flex-1 flex flex-col bg-white rounded-lg md:rounded-xl shadow-sm overflow-hidden">
         <!-- Tabs -->
-        <div class="flex items-center border-b border-gray-200 px-2 flex-shrink-0">
+        <div class="flex items-center border-b border-gray-200 px-1 md:px-2 flex-shrink-0">
           <button
             v-for="tab in tabs"
             :key="tab"
-            class="flex-1 px-4 md:px-6 py-3 md:py-4 text-sm font-medium transition-colors"
+            class="flex-1 px-3 md:px-6 py-2.5 md:py-4 text-xs md:text-sm font-medium transition-colors"
             :class="[
               activeTab === tab.toLowerCase()
                 ? 'text-gray-900 border-b-2 border-gray-900'
@@ -435,11 +435,10 @@ onUnmounted(() => {
 
         <!-- Lyrics Content -->
         <div class="flex-1 overflow-y-auto">
-          <div v-if="activeTab === '歌詞'" class="p-4 md:p-6 lg:p-8 space-y-2 md:space-y-3">
+          <div v-if="activeTab === '歌詞'" class="p-3 md:p-6 lg:p-8">
+          <template v-for="(_, index) in lyricsMap[primaryLanguage] || []" :key="index">
             <div
-              v-for="(_, index) in lyricsMap[primaryLanguage] || []"
-              :key="index"
-              class="transition-all duration-50 cursor-pointer p-3 md:p-4 rounded-lg mb-3 md:mb-4"
+              class="transition-all duration-50 cursor-pointer p-3 md:p-4 rounded-lg"
               :class="[
                 highlightedLineIndex === index
                   ? 'bg-red-50 border-l-4 border-red-500'
@@ -465,6 +464,8 @@ onUnmounted(() => {
                 </div>
               </div>
             </div>
+            <hr v-if="index < (lyricsMap[primaryLanguage]?.length || 0) - 1" class="my-2 border-gray-200">
+          </template>
           </div>
           
           <div v-else-if="activeTab === '留言'" class="text-center text-gray-500 py-12 md:py-16">
