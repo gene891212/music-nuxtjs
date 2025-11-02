@@ -147,14 +147,9 @@
               :disabled="loading"
             >
               <option value="">-- 選擇語言 --</option>
-              <option value="zh">中文</option>
-              <option value="en">English</option>
-              <option value="ja">日本語</option>
-              <option value="ko">한국어</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="ru">Русский</option>
+              <option v-for="lang in ALL_LANGUAGES" :key="lang" :value="lang">
+                {{ getLanguageName(lang) }}
+              </option>
             </select>
           </div>
 
@@ -216,6 +211,8 @@
 </template>
 
 <script setup lang="ts">
+import { ALL_LANGUAGES, getLanguageName } from '~/utils/languages'
+
 definePageMeta({
   middleware: 'auth',
 })

@@ -74,7 +74,7 @@
             <div class="flex items-center gap-2 border-b border-gray-200 pb-4">
               <div class="flex flex-wrap gap-2">
                 <button
-                  v-for="lang in languages"
+                  v-for="lang in allLanguages"
                   :key="lang"
                   type="button"
                   class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
@@ -84,49 +84,6 @@
                   @click="currentLanguage = lang"
                 >
                   {{ getLanguageName(lang) }}
-                </button>
-              </div>
-              <button
-                v-if="!showAddLanguage"
-                type="button"
-                class="ml-auto px-3 py-1 text-sm text-red-500 hover:text-red-600 font-medium"
-                @click="showAddLanguage = true"
-              >
-                + 新增語言
-              </button>
-            </div>
-
-            <!-- 新增語言表單 -->
-            <div v-if="showAddLanguage" class="bg-gray-50 p-4 rounded-lg space-y-3">
-              <div>
-                <label for="new-lang" class="block text-sm font-medium text-gray-700 mb-1">
-                  選擇語言
-                </label>
-                <select
-                  id="new-lang"
-                  v-model="newLanguage"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                >
-                  <option value="">-- 選擇語言 --</option>
-                  <option v-for="lang in availableLanguages" :key="lang" :value="lang">
-                    {{ getLanguageName(lang) }}
-                  </option>
-                </select>
-              </div>
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  class="px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors"
-                  @click="addLanguage"
-                >
-                  新增
-                </button>
-                <button
-                  type="button"
-                  class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
-                  @click="showAddLanguage = false; newLanguage = ''"
-                >
-                  取消
                 </button>
               </div>
             </div>
@@ -139,14 +96,13 @@
               <p class="text-xs text-gray-500">
                 支援格式:
                 <br>• <strong>LRC</strong>: <code class="bg-gray-100 px-1 rounded">[00:24.200]開いたノートに綴った青さは</code>
-                <br>• <strong>SRT</strong>: 包含時間碼 <code class="bg-gray-100 px-1 rounded">00:00:24,200 --> 00:00:36,900</code>
-                <br>• <strong>純文字</strong>: 每行一句歌詞
+                <br>• <strong>SRT</strong>: <code class="bg-gray-100 px-1 rounded">00:00:24,200 --> 00:00:36,900</code>
               </p>
               <textarea
                 id="lyrics-textarea"
                 v-model="currentLyrics"
                 rows="12"
-                placeholder="輸入 LRC/SRT 或純文字歌詞..."
+                placeholder="輸入 LRC/SRT 歌詞..."
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm"
                 :disabled="loading"
               />
@@ -242,6 +198,9 @@
 </template>
 
 <script setup>
+import { parseAuto } from '~/utils/lyrics'
+import { ALL_LANGUAGES, getLanguageName } from '~/utils/languages'
+
 definePageMeta({
   middleware: 'auth',
 })
@@ -250,19 +209,8 @@ const route = useRoute()
 const router = useRouter()
 const { getSongs, addLyrics } = useDatabase()
 
-// 語言映射
-const languageMap = {
-  zh: '中文',
-  en: 'English',
-  ja: '日本語',
-  ko: '한국어',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  ru: 'Русский',
-}
-
-const allLanguages = Object.keys(languageMap)
+// 使用共用的語言常數
+const allLanguages = ALL_LANGUAGES
 
 // 響應式狀態
 const songs = ref([])
@@ -271,10 +219,7 @@ const selectedSong = computed(() => {
   const id = Number(selectedSongId.value)
   return songs.value.find(s => s.song_id === id)
 })
-const languages = ref([])
 const currentLanguage = ref('zh')
-const showAddLanguage = ref(false)
-const newLanguage = ref('')
 
 const lyricsData = reactive({})
 const currentLyrics = computed({
@@ -289,127 +234,23 @@ const formData = reactive({
   translator: '',
 })
 
-const availableLanguages = computed(() =>
-  allLanguages.filter(lang => !languages.value.includes(lang))
-)
-
 const loadingInitial = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
-
-// 輔助函數
-const getLanguageName = (code) => languageMap[code] || code
-
-// 解析 SRT 格式
-const parseSRT = (content) => {
-  const lines = []
-  const blocks = content.trim().split('\n\n')
-  
-  for (const block of blocks) {
-    const lines_array = block.split('\n')
-    if (lines_array.length >= 3) {
-      const timecode = lines_array[1] // "00:00:24,200 --> 00:00:36,900"
-      const text = lines_array.slice(2).join('\n')
-      
-      const timeMatch = timecode.match(/(\d{2}):(\d{2}):(\d{2}),(\d{3})\s+-->\s+(\d{2}):(\d{2}):(\d{2}),(\d{3})/)
-      if (timeMatch) {
-        const startMs = (parseInt(timeMatch[1]) * 3600000) + (parseInt(timeMatch[2]) * 60000) + (parseInt(timeMatch[3]) * 1000) + parseInt(timeMatch[4])
-        const endMs = (parseInt(timeMatch[5]) * 3600000) + (parseInt(timeMatch[6]) * 60000) + (parseInt(timeMatch[7]) * 1000) + parseInt(timeMatch[8])
-        
-        lines.push({ start_ms: startMs, end_ms: endMs, text })
-      }
-    }
-  }
-  
-  return { lines }
-}
-
-// 解析 LRC 格式
-const parseLRC = (content) => {
-  const lines = []
-  const lrcLines = content.split('\n')
-  const timestamps = []
-  
-  // 第一遍：收集所有時間戳和文本
-  for (const line of lrcLines) {
-    // LRC 格式: [mm:ss.ms]text 或 [mm:ss]text
-    const match = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\](.*)/);
-    if (match) {
-      const minutes = parseInt(match[1])
-      const seconds = parseInt(match[2])
-      const milliseconds = match[3] ? parseInt(match[3].padEnd(3, '0')) : 0
-      const text = match[4].trim()
-      
-      const start_ms = (minutes * 60000) + (seconds * 1000) + milliseconds
-      
-      timestamps.push({ start_ms, text })
-    }
-  }
-  
-  // 第二遍：計算 end_ms（下一行的 start_ms，或 +5000ms 如果是最後一行）
-  for (let i = 0; i < timestamps.length; i++) {
-    const current = timestamps[i]
-    const next = timestamps[i + 1]
-    const end_ms = next ? next.start_ms : null
-    
-    lines.push({
-      start_ms: current.start_ms,
-      end_ms: end_ms,
-      text: current.text
-    })
-  }
-  
-  return { lines }
-}
-
-// 自動檢測並解析格式
-const parseAuto = (content) => {
-  content = content.trim()
-  
-  // 檢測 SRT 格式（包含 --> 時間碼）
-  if (content.includes('-->')) {
-    return parseSRT(content)
-  }
-  
-  // 檢測 LRC 格式（包含 [mm:ss] 時間碼）
-  if (content.includes('[') && content.includes(']')) {
-    return parseLRC(content)
-  }
-  
-  // 預設為純文字
-  const lines = content
-    .split('\n')
-    .filter((line) => line.trim())
-    .map((text) => ({ text }))
-  return { lines }
-}
-
-const addLanguage = () => {
-  if (!newLanguage.value) {
-    errorMessage.value = '請選擇語言'
-    return
-  }
-  if (languages.value.includes(newLanguage.value)) {
-    errorMessage.value = '該語言已存在'
-    return
-  }
-  languages.value.push(newLanguage.value)
-  lyricsData[newLanguage.value] = ''
-  currentLanguage.value = newLanguage.value
-  newLanguage.value = ''
-  showAddLanguage.value = false
-  errorMessage.value = ''
-}
 
 const onSongSelected = () => {
   if (!selectedSong.value) return
 
   // 初始化語言（從預設語言開始）
   const defaultLang = selectedSong.value.default_language_code || 'zh'
-  languages.value = [defaultLang]
   currentLanguage.value = defaultLang
-  lyricsData[defaultLang] = ''
+  // 初始化所有語言的歌詞為空字串
+  allLanguages.forEach(lang => {
+    if (!lyricsData[lang]) {
+      lyricsData[lang] = ''
+    }
+  })
   errorMessage.value = ''
   successMessage.value = ''
 }
@@ -439,8 +280,8 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    // 為每個語言的歌詞建立記錄
-    for (const lang of languages.value) {
+    // 為每個有內容的語言建立歌詞記錄
+    for (const lang of allLanguages) {
       const lyricsContent = lyricsData[lang]
       if (!lyricsContent || !lyricsContent.trim()) continue
 

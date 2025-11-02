@@ -186,7 +186,7 @@
               <div class="ml-3">
                 <p class="text-sm text-green-700">
                   {{ successMessage }}
-                </p>
+                </p>4-16345
               </div>
             </div>
           </div>
@@ -222,24 +222,14 @@
 </template>
 
 <script setup>
+import { getLanguageName } from '~/utils/languages'
+
 definePageMeta({
   middleware: 'auth',
 })
 
 const route = useRoute()
 const { getSongs, addSongTranslation, getSongTranslations } = useDatabase()
-
-// 語言映射
-const languageMap = {
-  zh: '中文',
-  en: 'English',
-  ja: '日本語',
-  ko: '한국어',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  ru: 'Русский',
-}
 
 // 響應式狀態
 const songs = ref([])
@@ -261,9 +251,6 @@ const loadingInitial = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
-
-// 輔助函數
-const getLanguageName = (code) => languageMap[code] || code
 
 const loadTranslations = async () => {
   if (!selectedSongId.value) return
