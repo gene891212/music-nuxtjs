@@ -25,8 +25,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('註冊失敗:', error.message)
       return { data: null, error }
     }
@@ -45,8 +44,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('登入失敗:', error.message)
       return { data: null, error }
     }
@@ -67,8 +65,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('OAuth 登入失敗:', error.message)
       return { data: null, error }
     }
@@ -87,8 +84,7 @@ export const useAuth = () => {
       await router.push('/')
 
       return { error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('登出失敗:', error.message)
       return { error }
     }
@@ -106,8 +102,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('發送密碼重置郵件失敗:', error.message)
       return { data: null, error }
     }
@@ -125,8 +120,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('更新密碼失敗:', error.message)
       return { data: null, error }
     }
@@ -144,8 +138,7 @@ export const useAuth = () => {
       if (error) throw error
 
       return { data, error: null }
-    }
-    catch (error: any) {
+    } catch (error: any) {
       console.error('更新個人資料失敗:', error.message)
       return { data: null, error }
     }

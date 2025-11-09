@@ -11,9 +11,9 @@ export type LanguageCode = 'zh' | 'en' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'ru'
  * 語言代碼對應的顯示名稱
  */
 export const LANGUAGE_MAP: Record<LanguageCode, string> = {
+  ja: '日本語',
   zh: '中文',
   en: 'English',
-  ja: '日本語',
   ko: '한국어',
   es: 'Español',
   fr: 'Français',

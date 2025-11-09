@@ -1,3 +1,9 @@
+<template>
+  <component :is="as" :class="buttonClasses">
+    <slot />
+  </component>
+</template>
+
 <script setup lang="ts">
 import { computed } from 'vue'
 import { cn } from '~/utils'
@@ -20,8 +26,7 @@ const buttonClasses = computed(() => {
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',
     'disabled:pointer-events-none disabled:opacity-50',
     {
-      'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700':
-        props.variant === 'default',
+      'bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-700': props.variant === 'default',
       'bg-transparent hover:bg-gray-100 active:bg-gray-200 text-gray-700':
         props.variant === 'ghost',
       'border border-gray-300 bg-transparent hover:bg-gray-50 text-gray-700':
@@ -38,9 +43,3 @@ const buttonClasses = computed(() => {
   )
 })
 </script>
-
-<template>
-  <component :is="as" :class="buttonClasses">
-    <slot />
-  </component>
-</template>

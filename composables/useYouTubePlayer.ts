@@ -27,7 +27,7 @@ export function useYouTubeAPI() {
     // 開始載入
     isYouTubeAPILoading.value = true
 
-    apiReadyPromise = new Promise((resolve) => {
+    apiReadyPromise = new Promise(resolve => {
       // 檢查 API 是否已經被載入
       if (window.YT && window.YT.Player) {
         isYouTubeAPIReady.value = true
@@ -87,11 +87,11 @@ export function useYouTubePlayer() {
     }
   ): Promise<YT.Player> => {
     const { loadYouTubeAPI } = useYouTubeAPI()
-    
+
     // 確保 API 已載入
     await loadYouTubeAPI()
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       player.value = new YT.Player(elementId, {
         videoId,
         playerVars: {

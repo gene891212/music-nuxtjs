@@ -26,29 +26,25 @@ onMounted(async () => {
   if (!props.videoId) return
 
   try {
-    player.value = await initPlayer(
-      playerContainerId.value,
-      props.videoId,
-      {
-        onReady: (event: YT.PlayerEvent) => {
-          isReady.value = true
-          emit('ready', event.target)
-          
-          // 如果需要自動播放
-          if (props.autoplay) {
-            play()
-          }
-        },
-        onStateChange: (event: YT.OnStateChangeEvent) => {
-          const state = event.data
-          emit('stateChange', state)
-        },
-        onError: (event: YT.OnErrorEvent) => {
-          console.error('YouTube Player Error:', event)
-          emit('error', event)
-        },
-      }
-    )
+    player.value = await initPlayer(playerContainerId.value, props.videoId, {
+      onReady: (event: YT.PlayerEvent) => {
+        isReady.value = true
+        emit('ready', event.target)
+
+        // 如果需要自動播放
+        if (props.autoplay) {
+          play()
+        }
+      },
+      onStateChange: (event: YT.OnStateChangeEvent) => {
+        const state = event.data
+        emit('stateChange', state)
+      },
+      onError: (event: YT.OnErrorEvent) => {
+        console.error('YouTube Player Error:', event)
+        emit('error', event)
+      },
+    })
   } catch (error) {
     console.error('Failed to initialize YouTube player:', error)
   }
@@ -60,11 +56,14 @@ onBeforeUnmount(() => {
 })
 
 // 監聽 videoId 變化
-watch(() => props.videoId, (newVideoId) => {
-  if (newVideoId && isReady.value) {
-    loadVideoById(newVideoId)
+watch(
+  () => props.videoId,
+  newVideoId => {
+    if (newVideoId && isReady.value) {
+      loadVideoById(newVideoId)
+    }
   }
-})
+)
 
 // 暴露給父元件的方法
 defineExpose({
@@ -78,10 +77,7 @@ defineExpose({
 <template>
   <ClientOnly>
     <div class="youtube-player-wrapper w-full h-full">
-      <div 
-        :id="playerContainerId" 
-        class="w-full h-full"
-      />
+      <div :id="playerContainerId" class="w-full h-full" />
     </div>
     <template #fallback>
       <div class="w-full h-full bg-gray-900 flex items-center justify-center">

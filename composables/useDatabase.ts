@@ -31,11 +31,13 @@ export const useDatabase = () => {
   const getSongById = async (songId: number) => {
     const { data, error } = await supabase
       .from('songs')
-      .select(`
+      .select(
+        `
         *,
         song_translations (*),
         lyrics (*)
-      `)
+      `
+      )
       .eq('song_id', songId)
       .single()
 
@@ -144,11 +146,7 @@ export const useDatabase = () => {
    * 建立新歌曲
    */
   const createSong = async (song: Database['public']['Tables']['songs']['Insert']) => {
-    const { data, error } = await supabase
-      .from('songs')
-      .insert([song])
-      .select()
-      .single()
+    const { data, error } = await supabase.from('songs').insert([song]).select().single()
 
     if (error) {
       console.error('建立歌曲失敗:', error)
@@ -161,7 +159,10 @@ export const useDatabase = () => {
   /**
    * 更新歌曲資訊
    */
-  const updateSong = async (songId: number, song: Database['public']['Tables']['songs']['Update']) => {
+  const updateSong = async (
+    songId: number,
+    song: Database['public']['Tables']['songs']['Update']
+  ) => {
     const { data, error } = await supabase
       .from('songs')
       .update(song)
@@ -181,10 +182,7 @@ export const useDatabase = () => {
    * 刪除歌曲及相關資料
    */
   const deleteSong = async (songId: number) => {
-    const { error } = await supabase
-      .from('songs')
-      .delete()
-      .eq('song_id', songId)
+    const { error } = await supabase.from('songs').delete().eq('song_id', songId)
 
     if (error) {
       console.error('刪除歌曲失敗:', error)
@@ -197,7 +195,9 @@ export const useDatabase = () => {
   /**
    * 新增歌曲翻譯
    */
-  const addSongTranslation = async (translation: Database['public']['Tables']['song_translations']['Insert']) => {
+  const addSongTranslation = async (
+    translation: Database['public']['Tables']['song_translations']['Insert']
+  ) => {
     const { data, error } = await supabase
       .from('song_translations')
       .insert([translation])
@@ -216,11 +216,7 @@ export const useDatabase = () => {
    * 新增歌詞
    */
   const addLyrics = async (lyrics: Database['public']['Tables']['lyrics']['Insert']) => {
-    const { data, error } = await supabase
-      .from('lyrics')
-      .insert([lyrics])
-      .select()
-      .single()
+    const { data, error } = await supabase.from('lyrics').insert([lyrics]).select().single()
 
     if (error) {
       console.error('新增歌詞失敗:', error)
@@ -233,7 +229,10 @@ export const useDatabase = () => {
   /**
    * 更新歌詞
    */
-  const updateLyrics = async (lyricId: number, lyrics: Database['public']['Tables']['lyrics']['Update']) => {
+  const updateLyrics = async (
+    lyricId: number,
+    lyrics: Database['public']['Tables']['lyrics']['Update']
+  ) => {
     const { data, error } = await supabase
       .from('lyrics')
       .update(lyrics)
@@ -253,10 +252,7 @@ export const useDatabase = () => {
    * 刪除歌詞
    */
   const deleteLyrics = async (lyricId: number) => {
-    const { error } = await supabase
-      .from('lyrics')
-      .delete()
-      .eq('lyrics_id', lyricId)
+    const { error } = await supabase.from('lyrics').delete().eq('lyrics_id', lyricId)
 
     if (error) {
       console.error('刪除歌詞失敗:', error)

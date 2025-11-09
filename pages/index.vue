@@ -1,49 +1,3 @@
-<script setup>
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
-import Button from '~/components/ui/Button.vue'
-import { useYouTube } from '~/composables/useYouTube'
-
-const { getSongs } = useDatabase()
-const { getThumbnail } = useYouTube()
-
-const allSongs = ref([])
-const quickPicks = ref([])
-const newReleases = ref([])
-
-// 從陣列中隨機挑選指定數量的項目
-const getRandomItems = (items, count) => {
-  const shuffled = [...items].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
-}
-
-// 初始化資料
-const initializeData = async () => {
-  try {
-    const songs = await getSongs()
-    // 確保 songs 是陣列，並過濾掉 null/undefined
-    allSongs.value = Array.isArray(songs) ? songs : (songs ? [songs] : [])
-    
-    // 快選：隨機挑 6 首
-    quickPicks.value = getRandomItems(allSongs.value, 6)
-    
-    // 最新發行：按 created_at 排序，取最新的 6 首
-    newReleases.value = [...allSongs.value]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 6)
-  } catch (error) {
-    console.error('載入歌曲失敗:', error)
-  }
-}
-
-onMounted(() => {
-  initializeData()
-})
-
-useHead({
-  title: '首頁 - YouTube Music',
-})
-</script>
-
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Main Content -->
@@ -76,10 +30,12 @@ useHead({
                 :alt="song.artist || 'Song thumbnail'"
                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                 loading="lazy"
-              >
+              />
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm md:text-base text-gray-900 font-medium truncate">{{ song.title }}</h3>
+              <h3 class="text-sm md:text-base text-gray-900 font-medium truncate">
+                {{ song.title }}
+              </h3>
               <p class="text-xs md:text-sm text-gray-500 truncate">
                 {{ song.album_title || '未知專輯' }} • {{ song.artist || '未知歌手' }}
               </p>
@@ -103,22 +59,28 @@ useHead({
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4">
+        <div
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4"
+        >
           <NuxtLink
             v-for="song in newReleases"
             :key="song.song_id"
             :to="`/player/${song.song_id}`"
             class="group cursor-pointer block"
           >
-            <div class="aspect-video rounded-lg overflow-hidden mb-1.5 md:mb-3 shadow-soft hover:shadow-hard transition-all duration-300">
+            <div
+              class="aspect-video rounded-lg overflow-hidden mb-1.5 md:mb-3 shadow-soft hover:shadow-hard transition-all duration-300"
+            >
               <img
                 :src="getThumbnail(song.youtube_video_id || '', 'maxres')"
                 :alt="song.title"
                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
-              >
+              />
             </div>
-            <h3 class="text-sm md:text-base text-gray-900 font-medium truncate mb-0.5 md:mb-1">{{ song.title }}</h3>
+            <h3 class="text-sm md:text-base text-gray-900 font-medium truncate mb-0.5 md:mb-1">
+              {{ song.title }}
+            </h3>
             <p class="text-xs md:text-sm text-gray-500 truncate">{{ song.artist || '未知歌手' }}</p>
           </NuxtLink>
         </div>
@@ -126,3 +88,49 @@ useHead({
     </main>
   </div>
 </template>
+
+<script setup>
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import Button from '~/components/ui/Button.vue'
+import { useYouTube } from '~/composables/useYouTube'
+
+const { getSongs } = useDatabase()
+const { getThumbnail } = useYouTube()
+
+const allSongs = ref([])
+const quickPicks = ref([])
+const newReleases = ref([])
+
+// 從陣列中隨機挑選指定數量的項目
+const getRandomItems = (items, count) => {
+  const shuffled = [...items].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
+// 初始化資料
+const initializeData = async () => {
+  try {
+    const songs = await getSongs()
+    // 確保 songs 是陣列，並過濾掉 null/undefined
+    allSongs.value = Array.isArray(songs) ? songs : songs ? [songs] : []
+
+    // 快選：隨機挑 6 首
+    quickPicks.value = getRandomItems(allSongs.value, 6)
+
+    // 最新發行：按 created_at 排序，取最新的 6 首
+    newReleases.value = [...allSongs.value]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 6)
+  } catch (error) {
+    console.error('載入歌曲失敗:', error)
+  }
+}
+
+onMounted(() => {
+  initializeData()
+})
+
+useHead({
+  title: '首頁 - YouTube Music',
+})
+</script>

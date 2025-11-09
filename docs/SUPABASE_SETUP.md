@@ -30,6 +30,7 @@ SUPABASE_KEY=your-anon-key-here
 ```
 
 **在哪裡找到這些金鑰？**
+
 1. 前往 [Supabase Dashboard](https://app.supabase.com)
 2. 選擇你的專案
 3. 點擊左側選單的 **Settings** → **API**
@@ -88,7 +89,7 @@ onMounted(() => {
 export default defineNuxtConfig({
   // 將 ssr: false 改成 ssr: true 或直接刪除此行
   ssr: true,
-  
+
   // 其他設定保持不變
   // 你的程式碼完全不用改！
 })

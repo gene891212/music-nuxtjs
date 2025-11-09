@@ -14,17 +14,20 @@
 ## 🛠️ 技術棧
 
 ### 核心框架
+
 - **Nuxt 3** - Vue 3 全端框架
 - **Vue 3** - 漸進式 JavaScript 框架
 - **TypeScript** - JavaScript 的超集
 
 ### UI 和樣式
+
 - **Tailwind CSS v3** - 實用優先的 CSS 框架
 - **Lucide Vue Next** - 優雅的圖示庫
 - **@nuxt/image** - 圖片優化
 - **@nuxt/fonts** - 字體優化
 
 ### 狀態管理和工具
+
 - **Pinia** - Vue 狀態管理
 - **VueUse** - Vue Composition API 工具集
 - **@vueuse/motion** - 動畫庫

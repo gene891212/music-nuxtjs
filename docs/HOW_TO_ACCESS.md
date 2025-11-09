@@ -5,11 +5,13 @@
 ### 1. **確保開發伺服器正在運行**
 
 如果還沒啟動，在終端機執行：
+
 ```powershell
 pnpm dev
 ```
 
 等待看到類似這樣的訊息：
+
 ```
 ✔ Nuxt DevTools is enabled
 ✔ Vite client warmed up
@@ -23,6 +25,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 ### 2. **開啟瀏覽器訪問以下頁面**
 
 #### 📄 主要頁面
+
 - **首頁**: http://localhost:3000/
 - **登入頁面**: http://localhost:3000/auth/login
 - **註冊頁面**: http://localhost:3000/auth/register
@@ -45,6 +48,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 3. 點擊「註冊」按鈕
 
 **預期結果：**
+
 - ✅ 顯示綠色成功訊息
 - ✅ 2 秒後自動跳轉到登入頁面
 
@@ -57,6 +61,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 3. 點擊「登入」按鈕
 
 **預期結果：**
+
 - ✅ 顯示「登入成功！」
 - ✅ 跳轉到首頁
 - ✅ 右上角顯示用戶頭像和名稱（顯示為「測試用戶」或「test」）
@@ -68,6 +73,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 2. 或直接前往 http://localhost:3000/upload
 
 **預期結果：**
+
 - ✅ 可以正常訪問頁面
 - ✅ 顯示「歡迎來到上傳頁面！」
 - ✅ 顯示你的 Email 和 User ID
@@ -78,6 +84,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 2. 在下拉選單中點擊「登出」
 
 **預期結果：**
+
 - ✅ 成功登出
 - ✅ 跳轉到首頁
 - ✅ 右上角顯示「登入」和「註冊」按鈕
@@ -87,6 +94,7 @@ Nuxt 4.1.3 with Nitro 2.10.4
 1. **在登出狀態下**，直接訪問 http://localhost:3000/upload
 
 **預期結果：**
+
 - ✅ 自動重定向到登入頁面
 - ✅ URL 變成：`http://localhost:3000/auth/login?redirect=/upload`
 - ✅ 登入後會自動返回 `/upload` 頁面
@@ -98,7 +106,9 @@ Nuxt 4.1.3 with Nitro 2.10.4
 ### **問題 1：無法註冊或登入**
 
 **檢查事項：**
+
 1. 確認 `.env` 檔案存在且包含：
+
    ```env
    SUPABASE_URL=你的_supabase_url
    SUPABASE_KEY=你的_supabase_key
@@ -117,12 +127,14 @@ Nuxt 4.1.3 with Nitro 2.10.4
 **原因：** Supabase 可能要求驗證 Email
 
 **解決方法：**
+
 1. 前往 Supabase Dashboard
 2. **Authentication** → **Users**
 3. 找到你的測試帳號
 4. 點擊右側的「...」→ **Confirm email**
 
 或者：
+
 1. **Authentication** → **Settings**
 2. 關閉 **Enable email confirmations**
 

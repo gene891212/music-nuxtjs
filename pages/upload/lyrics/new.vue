@@ -3,18 +3,22 @@
     <div class="max-w-4xl mx-auto">
       <!-- 標題區 -->
       <div class="mb-8">
-        <NuxtLink to="/upload" class="inline-flex items-center text-red-500 hover:text-red-600 mb-4">
+        <NuxtLink
+          to="/upload"
+          class="inline-flex items-center text-red-500 hover:text-red-600 mb-4"
+        >
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           返回
         </NuxtLink>
-        <h1 class="text-3xl font-bold text-gray-900">
-          新增歌詞
-        </h1>
-        <p class="mt-2 text-gray-600">
-          為歌曲新增歌詞和翻譯
-        </p>
+        <h1 class="text-3xl font-bold text-gray-900">新增歌詞</h1>
+        <p class="mt-2 text-gray-600">為歌曲新增歌詞和翻譯</p>
       </div>
 
       <!-- 內容卡片 -->
@@ -23,14 +27,18 @@
           <!-- 步驟指示 -->
           <div class="flex items-center justify-between mb-8">
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div
+                class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold"
+              >
                 1
               </div>
               <span class="ml-2 text-sm font-medium text-gray-900">選擇歌曲</span>
             </div>
             <div class="flex-1 mx-4 h-1 bg-gray-200" />
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div
+                class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold"
+              >
                 2
               </div>
               <span class="ml-2 text-sm font-medium text-gray-600">編輯歌詞</span>
@@ -64,7 +72,10 @@
               </NuxtLink>
             </div>
             <p v-if="selectedSong" class="mt-2 text-sm text-gray-600">
-              預設語言: <span class="font-medium">{{ getLanguageName(selectedSong.default_language_code) }}</span>
+              預設語言:
+              <span class="font-medium">{{
+                getLanguageName(selectedSong.default_language_code)
+              }}</span>
             </p>
           </div>
 
@@ -78,9 +89,11 @@
                   :key="lang"
                   type="button"
                   class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
-                  :class="currentLanguage === lang
-                    ? 'bg-red-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                  :class="
+                    currentLanguage === lang
+                      ? 'bg-red-500 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  "
                   @click="currentLanguage = lang"
                 >
                   {{ getLanguageName(lang) }}
@@ -95,8 +108,10 @@
               </label>
               <p class="text-xs text-gray-500">
                 支援格式:
-                <br>• <strong>LRC</strong>: <code class="bg-gray-100 px-1 rounded">[00:24.200]開いたノートに綴った青さは</code>
-                <br>• <strong>SRT</strong>: <code class="bg-gray-100 px-1 rounded">00:00:24,200 --> 00:00:36,900</code>
+                <br />• <strong>LRC</strong>:
+                <code class="bg-gray-100 px-1 rounded">[00:24.200]開いたノートに綴った青さは</code>
+                <br />• <strong>SRT</strong>:
+                <code class="bg-gray-100 px-1 rounded">00:00:24,200 --> 00:00:36,900</code>
               </p>
               <textarea
                 id="lyrics-textarea"
@@ -121,7 +136,7 @@
                   placeholder="例如: Original, Wikipedia"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   :disabled="loading"
-                >
+                />
               </div>
               <div>
                 <label for="translator" class="block text-sm font-medium text-gray-700 mb-1">
@@ -134,7 +149,7 @@
                   placeholder="您的名字"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   :disabled="loading"
-                >
+                />
               </div>
             </div>
           </div>
@@ -142,8 +157,16 @@
           <!-- 錯誤訊息 -->
           <div v-if="errorMessage" class="rounded-lg bg-red-50 p-4 border border-red-200">
             <div class="flex">
-              <svg class="h-5 w-5 text-red-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+              <svg
+                class="h-5 w-5 text-red-400 flex-shrink-0"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clip-rule="evenodd"
+                />
               </svg>
               <div class="ml-3">
                 <p class="text-sm text-red-700">
@@ -156,8 +179,16 @@
           <!-- 成功訊息 -->
           <div v-if="successMessage" class="rounded-lg bg-green-50 p-4 border border-green-200">
             <div class="flex">
-              <svg class="h-5 w-5 text-green-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              <svg
+                class="h-5 w-5 text-green-400 flex-shrink-0"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
               </svg>
               <div class="ml-3">
                 <p class="text-sm text-green-700">
@@ -176,9 +207,25 @@
               @click="handleSubmit"
             >
               <span v-if="loading" class="inline-flex items-center">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg
+                  class="animate-spin -ml-1 mr-2 h-4 w-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 建立中...
               </span>
@@ -224,7 +271,7 @@ const currentLanguage = ref('zh')
 const lyricsData = reactive({})
 const currentLyrics = computed({
   get: () => lyricsData[currentLanguage.value] || '',
-  set: (value) => {
+  set: value => {
     lyricsData[currentLanguage.value] = value
   },
 })
@@ -320,7 +367,7 @@ onMounted(async () => {
   try {
     const result = await getSongs()
     // 確保 result 是陣列，並過濾掉 null/undefined
-    songs.value = Array.isArray(result) ? result : (result ? [result] : [])
+    songs.value = Array.isArray(result) ? result : result ? [result] : []
 
     // 從 query string 取得 songId
     const queryId = route.query.songId
