@@ -89,10 +89,9 @@
             >
           </div>
 
-          <!-- 作曲家 -->
           <div>
             <label for="composer" class="block text-sm font-medium text-gray-700 mb-1">
-              作曲家
+              作曲
             </label>
             <input
               id="composer"
@@ -104,10 +103,9 @@
             >
           </div>
 
-          <!-- 作詞家 -->
           <div>
             <label for="lyricist" class="block text-sm font-medium text-gray-700 mb-1">
-              作詞家
+              作詞
             </label>
             <input
               id="lyricist"
@@ -119,10 +117,9 @@
             >
           </div>
 
-          <!-- 編排者 -->
           <div>
             <label for="arranger" class="block text-sm font-medium text-gray-700 mb-1">
-              編排者
+              編曲
             </label>
             <input
               id="arranger"
@@ -302,7 +299,8 @@ const handleSubmit = async () => {
   if (data) {
     successMessage.value = '歌曲建立成功！正在跳轉...'
     
-    const songId = Array.isArray(data) ? data[0].song_id : data.song_id
+    // 確保正確取得 song_id
+    const songId = data.song_id
     setTimeout(() => {
       router.push(`/upload/lyrics/new?songId=${songId}`)
     }, 800)

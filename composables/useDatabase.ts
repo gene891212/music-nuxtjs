@@ -21,7 +21,8 @@ export const useDatabase = () => {
       return []
     }
 
-    return data
+    // 確保返回的一定是陣列
+    return data || []
   }
 
   /**
@@ -236,7 +237,7 @@ export const useDatabase = () => {
     const { data, error } = await supabase
       .from('lyrics')
       .update(lyrics)
-      .eq('lyric_id', lyricId)
+      .eq('lyrics_id', lyricId)
       .select()
       .single()
 
@@ -255,7 +256,7 @@ export const useDatabase = () => {
     const { error } = await supabase
       .from('lyrics')
       .delete()
-      .eq('lyric_id', lyricId)
+      .eq('lyrics_id', lyricId)
 
     if (error) {
       console.error('刪除歌詞失敗:', error)

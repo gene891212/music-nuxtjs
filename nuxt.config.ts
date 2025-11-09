@@ -43,4 +43,10 @@ export default defineNuxtConfig({
   },
 
   image: {},
+
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => ['rb', 'rt', 'rp', 'rtc'].includes(tag),
+    },
+  },
 })

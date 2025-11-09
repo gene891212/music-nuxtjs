@@ -350,7 +350,8 @@ onMounted(async () => {
 
   try {
     const result = await getSongs()
-    songs.value = Array.isArray(result) ? result : [result]
+    // 確保 result 是陣列，並過濾掉 null/undefined
+    songs.value = Array.isArray(result) ? result : (result ? [result] : [])
 
     // 從 query string 取得 songId
     const queryId = route.query.songId

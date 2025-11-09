@@ -7,6 +7,7 @@ export interface Song {
   thumbnail: string
   videoUrl?: string
   youtubeId?: string // YouTube 影片 ID
+  titlePayload?: TitlePayload | null
 }
 
 export interface Album {
@@ -22,15 +23,6 @@ export interface Category {
   id: number
   name: string
   slug: string
-}
-
-export interface PlaylistState {
-  currentSong: Song | null
-  isPlaying: boolean
-  volume: number
-  progress: number
-  queue: Song[]
-  youtubePlayer: any | null // YouTube Player 實例
 }
 
 /**
@@ -66,4 +58,12 @@ export interface LyricsLine {
  */
 export interface LyricsPayload {
   lines: LyricsLine[]
+}
+
+/**
+ * 標題資料結構（資料庫 payload 欄位）
+ */
+export interface TitlePayload {
+  text: string
+  ruby?: RubyAnnotation[]
 }

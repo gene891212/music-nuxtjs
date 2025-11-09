@@ -10,6 +10,7 @@ import {
 } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
 import Button from '~/components/ui/Button.vue'
+import { getLanguageName } from '~/utils/languages'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,6 +23,15 @@ const lyricsMap = ref({}) // { ja: [...], zh: [...], en: [...] }
 // 語言選擇
 const availableLanguages = ref([]) // 可用的語言列表
 const primaryLanguage = ref('ja') // 主要語言（時間軸基準）
+
+// 取得歌詞的 metadata（來源和譯者）
+const getLyricsMetadata = (lang) => {
+  const lyric = currentSongData.value?.lyrics?.find(l => l.language_code === lang)
+  return {
+    source: lyric?.source || null,
+    translator: lyric?.translator || null
+  }
+}
 
 // 標題翻譯
 const availableTitleLanguages = ref([]) // 可用的標題翻譯語言
@@ -71,6 +81,48 @@ const toggleRepeatCurrentLine = () => {
     repeatLineIndex.value = -1
     stopRepeatCheck()
   }
+}
+
+// 渲染帶有 Ruby 注音的文字
+const renderTextWithRuby = (text, rubyAnnotations) => {
+  if (!rubyAnnotations || rubyAnnotations.length === 0) {
+    return text
+  }
+
+  const parts = []
+  let lastIndex = 0
+
+  // 按照起始位置排序 Ruby 注音
+  const sortedRuby = [...rubyAnnotations].sort((a, b) => a.s - b.s)
+
+  sortedRuby.forEach((ruby) => {
+    // 添加 Ruby 注音前的普通文字
+    if (ruby.s > lastIndex) {
+      parts.push({
+        type: 'text',
+        content: text.slice(lastIndex, ruby.s)
+      })
+    }
+
+    // 添加帶 Ruby 注音的文字
+    parts.push({
+      type: 'ruby',
+      content: text.slice(ruby.s, ruby.e),
+      rt: ruby.rt
+    })
+
+    lastIndex = ruby.e
+  })
+
+  // 添加剩餘的普通文字
+  if (lastIndex < text.length) {
+    parts.push({
+      type: 'text',
+      content: text.slice(lastIndex)
+    })
+  }
+
+  return parts
 }
 
 // 開始檢查是否需要重複播放（基於 primaryLanguage）
@@ -179,10 +231,16 @@ const highlightedLineIndex = computed(() => {
   const primaryLines = lyricsMap.value[primaryLanguage.value]
   if (!primaryLines || !primaryLines.length) return -1
   
+  // 檢查第一行是否有時間軸，沒有則不高亮任何行（靜態歌詞）
+  const hasTimestamps = primaryLines.some(line => line.start_ms !== undefined && line.start_ms !== null)
+  if (!hasTimestamps) return -1
+  
   // 找到最後一個 start_ms <= currentTime 的行
   let index = -1
   for (let i = 0; i < primaryLines.length; i++) {
-    const startMs = primaryLines[i].start_ms || 0
+    const startMs = primaryLines[i].start_ms
+    if (startMs === undefined || startMs === null) continue
+    
     if (currentTime.value >= startMs) {
       index = i
     } else {
@@ -331,11 +389,22 @@ onUnmounted(() => {
           <!-- Song Info -->
           <div class="flex items-start justify-between mb-3 md:mb-6">
             <div class="flex-1 min-w-0">
-              <h2 class="text-lg md:text-2xl font-semibold text-gray-900 truncate mb-0.5 md:mb-1">
-                {{ currentSongData?.title || '未播放歌曲' }}
-              </h2>
+              <!-- 歌曲標題（支援 Ruby 注音） -->
+              <h1 class="text-lg md:text-2xl font-semibold text-gray-900 mb-0.5 md:mb-1">
+                <template v-if="currentSongData?.title_payload?.ruby">
+                  <template v-for="(part, partIndex) in renderTextWithRuby(currentSongData.title_payload.text, currentSongData.title_payload.ruby)" :key="partIndex">
+                    <ruby v-if="part.type === 'ruby'" class="ruby-text">
+                      <rb>{{ part.content }}</rb><rt class="text-[0.5em] leading-tight select-none whitespace-nowrap opacity-75">{{ part.rt }}</rt>
+                    </ruby>
+                    <template v-else>{{ part.content }}</template>
+                  </template>
+                </template>
+                <template v-else>
+                  {{ currentSongData?.title || '未播放歌曲' }}
+                </template>
+              </h1>
               <!-- 標題翻譯 -->
-              <p v-if="currentTitleTranslation" class="text-sm md:text-lg text-gray-600 truncate mb-1 md:mb-2">
+              <p v-if="currentTitleTranslation" class="text-sm md:text-lg text-gray-600 truncate mb-2 md:mb-3">
                 {{ currentTitleTranslation }}
               </p>
               <p class="text-xs md:text-base text-gray-500 truncate mb-2 md:mb-3">
@@ -345,13 +414,13 @@ onUnmounted(() => {
               <!-- Additional Info: Composer, Lyricist, Arranger -->
               <div class="mt-1.5 md:mt-3 space-y-0.5 md:space-y-1.5">
                 <p v-if="currentSongData?.composer" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">作曲：</span>{{ currentSongData.composer }}
+                  <span class="font-medium">作曲：{{ currentSongData.composer }}</span>
                 </p>
                 <p v-if="currentSongData?.lyricist" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">作詞：</span>{{ currentSongData.lyricist }}
+                  <span class="font-medium">作詞：{{ currentSongData.lyricist }}</span>
                 </p>
                 <p v-if="currentSongData?.arranger" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">編曲：</span>{{ currentSongData.arranger }}
+                  <span class="font-medium">編曲：{{ currentSongData.arranger }}</span>
                 </p>
               </div>
             </div>
@@ -362,6 +431,26 @@ onUnmounted(() => {
               <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
                 <Share2 class="w-3.5 h-3.5 md:w-5 md:h-5" />
               </Button>
+            </div>
+          </div>
+
+          <!-- 歌詞來源和譯者資訊 -->
+          <div v-if="availableLanguages.length > 1" class="mb-3 md:mb-6 p-2.5 md:p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 class="text-xs font-semibold text-gray-700 mb-1.5 md:mb-2">歌詞資訊</h3>
+            <div class="space-y-1">
+              <div v-for="lang in availableLanguages.slice(1)" :key="`meta-${lang}`" class="text-xs">
+                <span class="font-medium text-gray-900">{{ getLanguageName(lang) }}：</span>
+                <template v-if="getLyricsMetadata(lang).source || getLyricsMetadata(lang).translator">
+                  <span v-if="getLyricsMetadata(lang).source" class="text-gray-600">
+                    來源：{{ getLyricsMetadata(lang).source }}
+                  </span>
+                  <span v-if="getLyricsMetadata(lang).source && getLyricsMetadata(lang).translator" class="text-gray-400 mx-1">|</span>
+                  <span v-if="getLyricsMetadata(lang).translator" class="text-gray-600">
+                    譯者：{{ getLyricsMetadata(lang).translator }}
+                  </span>
+                </template>
+                <span v-else class="text-gray-400 italic">無資訊</span>
+              </div>
             </div>
           </div>
 
@@ -460,7 +549,19 @@ onUnmounted(() => {
                     langIndex > 0 && 'opacity-80'
                   ]"
                 >
-                  {{ lyricsMap[lang]?.[index]?.text || '' }}
+                  <!-- 渲染帶 Ruby 注音的歌詞 -->
+                  <template v-if="lyricsMap[lang]?.[index]?.ruby">
+                    <template v-for="(part, partIndex) in renderTextWithRuby(lyricsMap[lang][index].text, lyricsMap[lang][index].ruby)" :key="partIndex">
+                      <ruby v-if="part.type === 'ruby'" class="ruby-text">
+                        <rb>{{ part.content }}</rb><rt class="text-[0.7em] leading-tight select-none whitespace-nowrap opacity-75" :class="highlightedLineIndex === index ? 'opacity-85' : ''">{{ part.rt }}</rt>
+                      </ruby>
+                      <template v-else>{{ part.content }}</template>
+                    </template>
+                  </template>
+                  <!-- 無 Ruby 注音的普通文字 -->
+                  <template v-else>
+                    {{ lyricsMap[lang]?.[index]?.text || '' }}
+                  </template>
                 </div>
               </div>
             </div>
@@ -476,3 +577,11 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Ruby 注音位置 (Tailwind 無法設定) */
+.ruby-text {
+  ruby-position: over;
+  ruby-align: center;
+}
+</style>

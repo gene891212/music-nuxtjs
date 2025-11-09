@@ -116,7 +116,7 @@
                 </label>
                 <input
                   id="source"
-                  v-model="lyricsData.source"
+                  v-model="formData.source"
                   type="text"
                   placeholder="例如: Original, Wikipedia"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -129,7 +129,7 @@
                 </label>
                 <input
                   id="translator"
-                  v-model="lyricsData.translator"
+                  v-model="formData.translator"
                   type="text"
                   placeholder="您的名字"
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -319,7 +319,8 @@ onMounted(async () => {
 
   try {
     const result = await getSongs()
-    songs.value = Array.isArray(result) ? result : [result]
+    // 確保 result 是陣列，並過濾掉 null/undefined
+    songs.value = Array.isArray(result) ? result : (result ? [result] : [])
 
     // 從 query string 取得 songId
     const queryId = route.query.songId

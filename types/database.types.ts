@@ -132,6 +132,7 @@ export type Database = {
           lyricist: string | null
           song_id: number
           title: string
+          title_payload: Json | null
           updated_at: string
           youtube_video_id: string | null
         }
@@ -145,6 +146,7 @@ export type Database = {
           lyricist?: string | null
           song_id?: never
           title: string
+          title_payload?: Json | null
           updated_at?: string
           youtube_video_id?: string | null
         }
@@ -158,6 +160,7 @@ export type Database = {
           lyricist?: string | null
           song_id?: never
           title?: string
+          title_payload?: Json | null
           updated_at?: string
           youtube_video_id?: string | null
         }

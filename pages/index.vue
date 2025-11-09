@@ -20,7 +20,8 @@ const getRandomItems = (items, count) => {
 const initializeData = async () => {
   try {
     const songs = await getSongs()
-    allSongs.value = Array.isArray(songs) ? songs : [songs]
+    // 確保 songs 是陣列，並過濾掉 null/undefined
+    allSongs.value = Array.isArray(songs) ? songs : (songs ? [songs] : [])
     
     // 快選：隨機挑 6 首
     quickPicks.value = getRandomItems(allSongs.value, 6)
