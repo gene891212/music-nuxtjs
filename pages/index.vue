@@ -7,11 +7,22 @@
         <div class="flex items-center justify-between mb-3 md:mb-6">
           <h2 class="text-lg md:text-2xl font-semibold text-gray-900">歌曲快選</h2>
           <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-500 mr-2">全部顯示</span>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :disabled="quickPicksPage === 0"
+              @click="previousQuickPicks"
+            >
               <ChevronLeft class="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :disabled="quickPicksPage >= Math.ceil(quickPicks.length / 6) - 1"
+              @click="nextQuickPicks"
+            >
               <ChevronRight class="w-4 h-4" />
             </Button>
           </div>
@@ -19,7 +30,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
           <NuxtLink
-            v-for="song in quickPicks"
+            v-for="song in displayedQuickPicks"
             :key="song.song_id"
             :to="`/player/${song.song_id}`"
             class="flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-lg hover:bg-gray-100 transition-all cursor-pointer group"
@@ -49,11 +60,28 @@
         <div class="flex items-center justify-between mb-3 md:mb-6">
           <h2 class="text-lg md:text-2xl font-semibold text-gray-900">最新發行</h2>
           <div class="flex items-center gap-2">
-            <span class="text-sm text-gray-500 mr-2">查看更多</span>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
+            <NuxtLink
+              to="/songs"
+              class="text-sm text-gray-500 hover:text-gray-700 mr-2 transition-colors"
+            >
+              查看更多
+            </NuxtLink>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :disabled="newReleasesPage === 0"
+              @click="previousNewReleases"
+            >
               <ChevronLeft class="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" class="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-8 w-8"
+              :disabled="newReleasesPage >= Math.ceil(newReleases.length / 6) - 1"
+              @click="nextNewReleases"
+            >
               <ChevronRight class="w-4 h-4" />
             </Button>
           </div>
@@ -63,7 +91,7 @@
           class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-4"
         >
           <NuxtLink
-            v-for="song in newReleases"
+            v-for="song in displayedNewReleases"
             :key="song.song_id"
             :to="`/player/${song.song_id}`"
             class="group cursor-pointer block"
@@ -101,6 +129,52 @@ const allSongs = ref([])
 const quickPicks = ref([])
 const newReleases = ref([])
 
+// 分頁狀態
+const quickPicksPage = ref(0)
+const quickPicksPerPage = 6
+const newReleasesPage = ref(0)
+const newReleasesPerPage = 6
+
+// 計算當前顯示的快選歌曲
+const displayedQuickPicks = computed(() => {
+  const start = quickPicksPage.value * quickPicksPerPage
+  const end = start + quickPicksPerPage
+  return quickPicks.value.slice(start, end)
+})
+
+// 計算當前顯示的最新發行
+const displayedNewReleases = computed(() => {
+  const start = newReleasesPage.value * newReleasesPerPage
+  const end = start + newReleasesPerPage
+  return newReleases.value.slice(start, end)
+})
+
+// 快選分頁控制
+const nextQuickPicks = () => {
+  if (quickPicksPage.value < Math.ceil(quickPicks.value.length / quickPicksPerPage) - 1) {
+    quickPicksPage.value++
+  }
+}
+
+const previousQuickPicks = () => {
+  if (quickPicksPage.value > 0) {
+    quickPicksPage.value--
+  }
+}
+
+// 最新發行分頁控制
+const nextNewReleases = () => {
+  if (newReleasesPage.value < Math.ceil(newReleases.value.length / newReleasesPerPage) - 1) {
+    newReleasesPage.value++
+  }
+}
+
+const previousNewReleases = () => {
+  if (newReleasesPage.value > 0) {
+    newReleasesPage.value--
+  }
+}
+
 // 從陣列中隨機挑選指定數量的項目
 const getRandomItems = (items, count) => {
   const shuffled = [...items].sort(() => Math.random() - 0.5)
@@ -114,13 +188,13 @@ const initializeData = async () => {
     // 確保 songs 是陣列，並過濾掉 null/undefined
     allSongs.value = Array.isArray(songs) ? songs : songs ? [songs] : []
 
-    // 快選：隨機挑 6 首
-    quickPicks.value = getRandomItems(allSongs.value, 6)
+    // 快選：隨機挑 12 首
+    quickPicks.value = getRandomItems(allSongs.value, 12)
 
-    // 最新發行：按 created_at 排序，取最新的 6 首
+    // 最新發行：按 created_at 排序，取最新的 12 首
     newReleases.value = [...allSongs.value]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 6)
+      .slice(0, 12)
   } catch (error) {
     console.error('載入歌曲失敗:', error)
   }
