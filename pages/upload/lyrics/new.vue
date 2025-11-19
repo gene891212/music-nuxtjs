@@ -73,9 +73,9 @@
             </div>
             <p v-if="selectedSong" class="mt-2 text-sm text-gray-600">
               預設語言:
-              <span class="font-medium">{{
-                getLanguageName(selectedSong.default_language_code)
-              }}</span>
+              <span class="font-medium">
+                {{ getLanguageName(selectedSong.default_language_code) }}
+              </span>
             </p>
           </div>
 
@@ -85,7 +85,7 @@
             <div class="flex items-center gap-2 border-b border-gray-200 pb-4">
               <div class="flex flex-wrap gap-2">
                 <button
-                  v-for="lang in allLanguages"
+                  v-for="lang in ALL_LANGUAGES"
                   :key="lang"
                   type="button"
                   class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
@@ -256,9 +256,6 @@ const route = useRoute()
 const router = useRouter()
 const { getSongs, addLyrics } = useDatabase()
 
-// 使用共用的語言常數
-const allLanguages = ALL_LANGUAGES
-
 // 響應式狀態
 const songs = ref([])
 const selectedSongId = ref('')
@@ -293,7 +290,7 @@ const onSongSelected = () => {
   const defaultLang = selectedSong.value.default_language_code || 'zh'
   currentLanguage.value = defaultLang
   // 初始化所有語言的歌詞為空字串
-  allLanguages.forEach(lang => {
+  ALL_LANGUAGES.forEach(lang => {
     if (!lyricsData[lang]) {
       lyricsData[lang] = ''
     }
@@ -328,7 +325,7 @@ const handleSubmit = async () => {
 
   try {
     // 為每個有內容的語言建立歌詞記錄
-    for (const lang of allLanguages) {
+    for (const lang of ALL_LANGUAGES) {
       const lyricsContent = lyricsData[lang]
       if (!lyricsContent || !lyricsContent.trim()) continue
 

@@ -11,25 +11,19 @@ export const useDatabase = () => {
    * 獲取所有歌曲
    */
   const getSongs = async () => {
-    const { data, error } = await supabase
-      .from('songs')
-      .select('*')
-      .order('song_id', { ascending: false })
+    const { data: songs, error } = await supabase.from('songs').select('*')
 
     if (error) {
-      console.error('獲取歌曲失敗:', error)
-      return []
+      throw new Error(`Failed to fetch songs: ${error.message}`)
     }
-
-    // 確保返回的一定是陣列
-    return data || []
+    return songs ?? []
   }
 
   /**
    * 根據 ID 獲取單一歌曲及其翻譯和歌詞
    */
   const getSongById = async (songId: number) => {
-    const { data, error } = await supabase
+    const { data: song, error } = await supabase
       .from('songs')
       .select(
         `
@@ -42,18 +36,16 @@ export const useDatabase = () => {
       .single()
 
     if (error) {
-      console.error('獲取歌曲失敗:', error)
-      return null
+      throw new Error(`Failed to fetch song by id: ${error.message}`)
     }
-
-    return data
+    return song
   }
 
   /**
    * 根據語言代碼獲取歌曲翻譯
    */
   const getSongTranslation = async (songId: number, languageCode: string) => {
-    const { data, error } = await supabase
+    const { data: translation, error } = await supabase
       .from('song_translations')
       .select('*')
       .eq('song_id', songId)
@@ -61,18 +53,16 @@ export const useDatabase = () => {
       .single()
 
     if (error) {
-      console.error('獲取翻譯失敗:', error)
-      return null
+      throw new Error(`Failed to fetch song translation: ${error.message}`)
     }
-
-    return data
+    return translation
   }
 
   /**
    * 根據語言代碼獲取歌詞
    */
   const getLyrics = async (songId: number, languageCode: string) => {
-    const { data, error } = await supabase
+    const { data: lyrics, error } = await supabase
       .from('lyrics')
       .select('*')
       .eq('song_id', songId)
@@ -81,79 +71,69 @@ export const useDatabase = () => {
       .limit(1)
 
     if (error) {
-      console.error('獲取歌詞失敗:', error)
-      return null
+      throw new Error(`Failed to fetch lyrics: ${error.message}`)
     }
-
     // 如果有資料，返回第一筆（最新的）
-    return data && data.length > 0 ? data[0] : null
+    return lyrics?.[0] ?? null
   }
 
   /**
    * 獲取歌曲的所有可用語言
    */
   const getAvailableLanguages = async (songId: number) => {
-    const { data, error } = await supabase
+    const { data: records, error } = await supabase
       .from('lyrics')
       .select('language_code')
       .eq('song_id', songId)
 
     if (error) {
-      console.error('獲取可用語言失敗:', error)
-      return []
+      throw new Error(`Failed to fetch available languages: ${error.message}`)
     }
 
-    // 去重並返回語言代碼數組
-    return data ? [...new Set(data.map(l => l.language_code))] : []
+    return records ? [...new Set(records.map(r => r.language_code))] : []
   }
 
   /**
    * 獲取標題翻譯的所有可用語言
    */
   const getAvailableTitleLanguages = async (songId: number) => {
-    const { data, error } = await supabase
+    const { data: records, error } = await supabase
       .from('song_translations')
       .select('language_code')
       .eq('song_id', songId)
 
     if (error) {
-      console.error('獲取標題翻譯語言失敗:', error)
-      return []
+      throw new Error(`Failed to fetch available title languages: ${error.message}`)
     }
 
-    // 去重並返回語言代碼數組
-    return data ? [...new Set(data.map(t => t.language_code))] : []
+    return records ? [...new Set(records.map(r => r.language_code))] : []
   }
 
   /**
    * 搜尋歌曲（根據藝術家或專輯標題）
    */
   const searchSongs = async (keyword: string) => {
-    const { data, error } = await supabase
+    const { data: songs, error } = await supabase
       .from('songs')
       .select('*')
-      .or(`artist.ilike.%${keyword}%,album_title.ilike.%${keyword}%`)
+      .or(`title.ilike.%${keyword}%,artist.ilike.%${keyword}%,album.ilike.%${keyword}%`)
 
     if (error) {
-      console.error('搜尋歌曲失敗:', error)
-      return []
+      throw new Error(`Failed to search songs: ${error.message}`)
     }
-
-    return data
+    return songs ?? []
   }
 
   /**
    * 建立新歌曲
    */
   const createSong = async (song: Database['public']['Tables']['songs']['Insert']) => {
-    const { data, error } = await supabase.from('songs').insert([song]).select().single()
+    const { data, error } = await supabase.from('songs').insert(song).select().single()
 
     if (error) {
-      console.error('建立歌曲失敗:', error)
-      return { data: null, error }
+      throw new Error(`Failed to create song: ${error.message}`)
     }
-
-    return { data, error: null }
+    return data
   }
 
   /**
@@ -171,11 +151,9 @@ export const useDatabase = () => {
       .single()
 
     if (error) {
-      console.error('更新歌曲失敗:', error)
-      return { data: null, error }
+      throw new Error(`Failed to update song: ${error.message}`)
     }
-
-    return { data, error: null }
+    return data
   }
 
   /**
@@ -185,11 +163,8 @@ export const useDatabase = () => {
     const { error } = await supabase.from('songs').delete().eq('song_id', songId)
 
     if (error) {
-      console.error('刪除歌曲失敗:', error)
-      return { error }
+      throw new Error(`Failed to delete song: ${error.message}`)
     }
-
-    return { error: null }
   }
 
   /**
@@ -200,30 +175,26 @@ export const useDatabase = () => {
   ) => {
     const { data, error } = await supabase
       .from('song_translations')
-      .insert([translation])
+      .insert(translation)
       .select()
       .single()
 
     if (error) {
-      console.error('新增翻譯失敗:', error)
-      return { data: null, error }
+      throw new Error(`Failed to add song translation: ${error.message}`)
     }
-
-    return { data, error: null }
+    return data
   }
 
   /**
    * 新增歌詞
    */
   const addLyrics = async (lyrics: Database['public']['Tables']['lyrics']['Insert']) => {
-    const { data, error } = await supabase.from('lyrics').insert([lyrics]).select().single()
+    const { data, error } = await supabase.from('lyrics').insert(lyrics).select().single()
 
     if (error) {
-      console.error('新增歌詞失敗:', error)
-      return { data: null, error }
+      throw new Error(`Failed to add lyrics: ${error.message}`)
     }
-
-    return { data, error: null }
+    return data
   }
 
   /**
@@ -241,11 +212,9 @@ export const useDatabase = () => {
       .single()
 
     if (error) {
-      console.error('更新歌詞失敗:', error)
-      return { data: null, error }
+      throw new Error(`Failed to update lyrics: ${error.message}`)
     }
-
-    return { data, error: null }
+    return data
   }
 
   /**
@@ -255,29 +224,23 @@ export const useDatabase = () => {
     const { error } = await supabase.from('lyrics').delete().eq('lyrics_id', lyricId)
 
     if (error) {
-      console.error('刪除歌詞失敗:', error)
-      return { error }
+      throw new Error(`Failed to delete lyrics: ${error.message}`)
     }
-
-    return { error: null }
   }
 
   /**
    * 根據歌曲 ID 取得所有翻譯
    */
   const getSongTranslations = async (songId: number) => {
-    const { data, error } = await supabase
+    const { data: translations, error } = await supabase
       .from('song_translations')
       .select('*')
       .eq('song_id', songId)
-      .order('language_code', { ascending: true })
 
     if (error) {
-      console.error('獲取翻譯失敗:', error)
-      return []
+      throw new Error(`Failed to fetch song translations: ${error.message}`)
     }
-
-    return data || []
+    return translations ?? []
   }
 
   return {

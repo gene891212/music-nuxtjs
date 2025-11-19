@@ -284,7 +284,7 @@ import { getLanguageName } from '~/utils/languages'
 
 const router = useRouter()
 const route = useRoute()
-const { getSongById, getAvailableTitleLanguages, getSongTranslation } = useDatabase()
+const { getSongById } = useDatabase()
 
 // 響應式狀態
 const currentSongData = ref(null)
@@ -464,19 +464,16 @@ const initializeData = async () => {
     })
     availableLanguages.value = sortedLanguages
 
-    // 獲取標題翻譯的所有可用語言
-    const titleLanguages = await getAvailableTitleLanguages(songId.value)
-    availableTitleLanguages.value = titleLanguages
+    // 從已載入的 song_translations 中獲取可用語言和翻譯
+    const translations = song.song_translations || []
+    availableTitleLanguages.value = translations.map(t => t.language_code)
 
     // 加載標題翻譯（如果有的話）
-    if (availableTitleLanguages.value.length > 0) {
-      // 嘗試加載與主要語言相同的標題翻譯
-      const titleLang = availableTitleLanguages.value.includes(primaryLanguage.value)
-        ? primaryLanguage.value
-        : availableTitleLanguages.value[0]
+    if (translations.length > 0) {
+      // 嘗試找與主要語言相同的標題翻譯
+      const translation =
+        translations.find(t => t.language_code === primaryLanguage.value) || translations[0]
 
-      const translation = await getSongTranslation(songId.value, titleLang)
-      console.log('Loaded title translation:', translation)
       if (translation && translation.title) {
         currentTitleTranslation.value = translation.title
       }

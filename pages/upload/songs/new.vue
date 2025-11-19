@@ -243,6 +243,7 @@
 
 <script setup lang="ts">
 import { ALL_LANGUAGES, getLanguageName } from '~/utils/languages'
+import { extractYouTubeVideoId } from '~/utils/youtube'
 
 definePageMeta({
   middleware: 'auth',
@@ -252,25 +253,7 @@ const router = useRouter()
 const { createSong } = useDatabase()
 
 const youtubeUrl = ref('')
-const extractedVideoId = computed(() => {
-  if (!youtubeUrl.value) return ''
-
-  // YouTube URL regex patterns
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-    /youtube\.com\/embed\/([^&\n?#]+)/,
-    /youtube\.com\/v\/([^&\n?#]+)/,
-  ]
-
-  for (const pattern of patterns) {
-    const match = youtubeUrl.value.match(pattern)
-    if (match && match[1]) {
-      return match[1]
-    }
-  }
-
-  return ''
-})
+const extractedVideoId = computed(() => extractYouTubeVideoId(youtubeUrl.value))
 
 const form = reactive({
   title: '',
@@ -310,34 +293,30 @@ const handleSubmit = async () => {
 
   loading.value = true
 
-  const songData = {
-    title: form.title.trim(),
-    artist: form.artist.trim() || null,
-    album_title: form.album_title.trim() || null,
-    composer: form.composer.trim() || null,
-    lyricist: form.lyricist.trim() || null,
-    arranger: form.arranger.trim() || null,
-    youtube_video_id: extractedVideoId.value || null,
-    default_language_code: form.default_language_code,
-  }
+  try {
+    const songData = {
+      title: form.title.trim(),
+      artist: form.artist.trim() || null,
+      album_title: form.album_title.trim() || null,
+      composer: form.composer.trim() || null,
+      lyricist: form.lyricist.trim() || null,
+      arranger: form.arranger.trim() || null,
+      youtube_video_id: extractedVideoId.value || null,
+      default_language_code: form.default_language_code,
+    }
 
-  const { data, error } = await createSong(songData)
+    const data = await createSong(songData)
 
-  loading.value = false
-
-  if (error) {
-    errorMessage.value = error.message || '建立歌曲失敗，請稍後再試'
-    return
-  }
-
-  if (data) {
     successMessage.value = '歌曲建立成功！正在跳轉...'
 
-    // 確保正確取得 song_id
-    const songId = data.song_id
     setTimeout(() => {
-      router.push(`/upload/lyrics/new?songId=${songId}`)
+      router.push(`/upload/lyrics/new?songId=${data.song_id}`)
     }, 800)
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    errorMessage.value = error.message || '建立歌曲失敗，請稍後再試'
+  } finally {
+    loading.value = false
   }
 }
 

@@ -23,7 +23,7 @@
               class="aspect-video rounded-lg overflow-hidden mb-1.5 md:mb-3 shadow-soft hover:shadow-hard transition-all duration-300"
             >
               <img
-                :src="getThumbnail(song.youtube_video_id || '', 'maxres')"
+                :src="getYouTubeThumbnail(song.youtube_video_id || '', 'maxres')"
                 :alt="song.title"
                 class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
@@ -48,10 +48,9 @@
 </template>
 
 <script setup>
-import { useYouTube } from '~/composables/useYouTube'
+import { getYouTubeThumbnail } from '~/utils/youtube'
 
 const { getSongs } = useDatabase()
-const { getThumbnail } = useYouTube()
 
 const allSongs = ref([])
 

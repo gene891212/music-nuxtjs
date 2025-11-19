@@ -1,0 +1,6 @@
+{
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [{ "mode": "auto" }],
+  "eslint.runtime": "node", 
+  "eslint.nodePath": "node_modules"
+}
