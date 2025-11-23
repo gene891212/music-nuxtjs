@@ -82,21 +82,39 @@
           <!-- 歌詞編輯區 -->
           <div v-if="selectedSong" class="space-y-4">
             <!-- 語言標籤 -->
-            <div class="flex items-center gap-2 border-b border-gray-200 pb-4">
+            <div class="pb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2"> 選擇語言編輯 </label>
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="lang in ALL_LANGUAGES"
                   :key="lang"
                   type="button"
-                  class="px-3 py-1 rounded-full text-sm font-medium transition-colors"
+                  class="px-4 py-2 rounded-lg text-sm font-medium transition-colors relative border"
                   :class="
                     currentLanguage === lang
-                      ? 'bg-red-500 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? 'bg-red-500 text-white border-red-500 hover:bg-red-600'
+                      : lyricsData[lang]?.trim()
+                        ? 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                   "
                   @click="currentLanguage = lang"
                 >
-                  {{ getLanguageName(lang) }}
+                  <span class="flex items-center gap-1.5">
+                    {{ getLanguageName(lang) }}
+                    <svg
+                      v-if="lyricsData[lang]?.trim()"
+                      class="w-4 h-4"
+                      :class="currentLanguage === lang ? 'text-white' : 'text-green-500'"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </span>
                 </button>
               </div>
             </div>
