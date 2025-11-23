@@ -28,8 +28,8 @@
               >
             </template>
             <template v-else>
-              <div class="relative">
-                <button class="flex items-center gap-2" @click="showUserMenu = !showUserMenu">
+              <div class="relative group">
+                <button class="flex items-center gap-2">
                   <div
                     class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm"
                   >
@@ -37,8 +37,7 @@
                   </div>
                 </button>
                 <div
-                  v-if="showUserMenu"
-                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1"
+                  class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
                 >
                   <div class="px-4 py-2 border-b">
                     <p class="text-sm font-medium">{{ displayName }}</p>
@@ -47,15 +46,15 @@
                   <NuxtLink
                     to="/profile"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    @click="showUserMenu = false"
-                    >個人資料</NuxtLink
                   >
+                    個人資料
+                  </NuxtLink>
                   <NuxtLink
                     to="/upload"
                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    @click="showUserMenu = false"
-                    >上傳歌曲</NuxtLink
                   >
+                    上傳歌曲
+                  </NuxtLink>
                   <button
                     class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     @click="handleSignOut"
@@ -142,8 +141,8 @@
           </template>
           <template v-else>
             <!-- 用戶下拉選單 -->
-            <div class="relative">
-              <button class="flex items-center gap-2" @click="showUserMenu = !showUserMenu">
+            <div class="relative group">
+              <button class="flex items-center gap-2">
                 <div
                   class="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm"
                 >
@@ -151,8 +150,7 @@
                 </div>
               </button>
               <div
-                v-if="showUserMenu"
-                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1"
+                class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50"
               >
                 <div class="px-4 py-2 border-b">
                   <p class="text-sm font-medium">{{ displayName }}</p>
@@ -161,15 +159,15 @@
                 <NuxtLink
                   to="/profile"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  @click="showUserMenu = false"
-                  >個人資料</NuxtLink
                 >
+                  個人資料
+                </NuxtLink>
                 <NuxtLink
                   to="/upload"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  @click="showUserMenu = false"
-                  >上傳歌曲</NuxtLink
                 >
+                  上傳歌曲
+                </NuxtLink>
                 <button
                   class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   @click="handleSignOut"
@@ -188,13 +186,11 @@
 <script setup lang="ts">
 const { isAuthenticated, userEmail, userMetadata, signOut } = useAuth()
 const searchQuery = ref('')
-const showUserMenu = ref(false)
 const displayName = computed(
   () => userMetadata.value?.display_name || userEmail.value?.split('@')[0] || '用戶'
 )
 const userInitial = computed(() => displayName.value.charAt(0).toUpperCase())
 const handleSignOut = async () => {
-  showUserMenu.value = false
   await signOut()
 }
 </script>
