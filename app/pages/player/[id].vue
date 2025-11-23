@@ -1,279 +1,262 @@
 <template>
-  <div
-    class="bg-gray-50 min-h-[calc(100vh-68px)] lg:h-[calc(100vh-68px)] flex flex-col lg:overflow-hidden"
-  >
-    <!-- Main Content - Responsive Layout -->
-    <div
-      class="flex-1 flex flex-col lg:flex-row lg:overflow-hidden gap-2 md:gap-4 lg:gap-6 p-3 md:p-4 lg:p-6 max-w-[1800px] mx-auto w-full"
-    >
-      <!-- Video Player and Controls Section -->
-      <div class="w-full lg:flex-1 flex flex-col bg-white rounded-lg md:rounded-xl shadow-sm">
-        <!-- Video Section -->
-        <div
-          class="aspect-video bg-black flex items-center justify-center relative rounded-t-lg md:rounded-t-xl overflow-hidden"
-        >
-          <!-- YouTube Player -->
-          <YouTubePlayer
-            v-if="currentSongData?.youtube_video_id"
-            :video-id="currentSongData.youtube_video_id"
-            :autoplay="false"
-            @ready="onPlayerReady"
-            @state-change="onPlayerStateChange"
-          />
+  <NuxtLayout name="split-screen">
+    <template #left>
+      <!-- Video Section -->
+      <div
+        class="aspect-video bg-black flex items-center justify-center relative rounded-t-lg md:rounded-t-xl overflow-hidden flex-shrink-0"
+      >
+        <!-- YouTube Player -->
+        <YouTubePlayer
+          v-if="currentSongData?.youtube_video_id"
+          :video-id="currentSongData.youtube_video_id"
+          :autoplay="false"
+          @ready="onPlayerReady"
+          @state-change="onPlayerStateChange"
+        />
 
-          <!-- Fallback for songs without YouTube ID -->
-          <div v-else class="absolute inset-0">
-            <div class="w-full h-full bg-gray-900" />
+        <!-- Fallback for songs without YouTube ID -->
+        <div v-else class="absolute inset-0">
+          <div class="w-full h-full bg-gray-900" />
 
-            <!-- Video overlay with text -->
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-center text-white">
-                <div v-if="currentSongData" class="text-4xl md:text-8xl opacity-20 mb-4">
-                  {{ currentSongData.title }}
-                </div>
-                <p class="text-lg md:text-xl opacity-60">Music Video</p>
+          <!-- Video overlay with text -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center text-white">
+              <div v-if="currentSongData" class="text-4xl md:text-8xl opacity-20 mb-4">
+                {{ currentSongData.title }}
               </div>
+              <p class="text-lg md:text-xl opacity-60">Music Video</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Controls Section -->
-        <div class="p-3 md:p-6 lg:p-8 bg-white rounded-b-lg md:rounded-b-xl">
-          <!-- Song Info -->
-          <div class="flex items-start justify-between mb-3 md:mb-6">
-            <div class="flex-1 min-w-0">
-              <!-- 歌曲標題（支援 Ruby 注音） -->
-              <h1 class="text-lg md:text-2xl font-semibold text-gray-900 mb-0.5 md:mb-1">
-                <template v-if="currentSongData?.title_payload?.ruby">
-                  <template
-                    v-for="(part, partIndex) in renderTextWithRuby(
-                      currentSongData.title_payload.text,
-                      currentSongData.title_payload.ruby
-                    )"
-                    :key="partIndex"
-                  >
-                    <ruby v-if="part.type === 'ruby'" class="ruby-text">
-                      <rb>{{ part.content }}</rb
-                      ><rt
-                        class="text-[0.5em] leading-tight select-none whitespace-nowrap opacity-75"
-                        >{{ part.rt }}</rt
-                      >
-                    </ruby>
-                    <template v-else>{{ part.content }}</template>
-                  </template>
-                </template>
-                <template v-else>
-                  {{ currentSongData?.title || '未播放歌曲' }}
-                </template>
-              </h1>
-              <!-- 標題翻譯 -->
-              <p
-                v-if="currentTitleTranslation"
-                class="text-sm md:text-lg text-gray-600 truncate mb-2 md:mb-3"
-              >
-                {{ currentTitleTranslation }}
-              </p>
-              <p class="text-xs md:text-base text-gray-500 truncate mb-2 md:mb-3">
-                {{ currentSongData?.artist || '未知藝人' }}
-              </p>
-
-              <!-- Additional Info: Composer, Lyricist, Arranger -->
-              <div class="mt-1.5 md:mt-3 space-y-0.5 md:space-y-1.5">
-                <p v-if="currentSongData?.composer" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">作曲：{{ currentSongData.composer }}</span>
-                </p>
-                <p v-if="currentSongData?.lyricist" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">作詞：{{ currentSongData.lyricist }}</span>
-                </p>
-                <p v-if="currentSongData?.arranger" class="text-xs md:text-sm text-gray-600">
-                  <span class="font-medium">編曲：{{ currentSongData.arranger }}</span>
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 md:gap-3 ml-2 md:ml-6">
-              <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
-                <Heart class="w-3.5 h-3.5 md:w-5 md:h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
-                <Share2 class="w-3.5 h-3.5 md:w-5 md:h-5" />
-              </Button>
-            </div>
-          </div>
-
-          <!-- 歌詞來源和譯者資訊 -->
-          <div
-            v-if="availableLanguages.length > 1"
-            class="mb-3 md:mb-6 p-2.5 md:p-3 bg-gray-50 rounded-lg border border-gray-200"
-          >
-            <h3 class="text-xs font-semibold text-gray-700 mb-1.5 md:mb-2">歌詞資訊</h3>
-            <div class="space-y-1">
-              <div
-                v-for="lang in availableLanguages.slice(1)"
-                :key="`meta-${lang}`"
-                class="text-xs"
-              >
-                <span class="font-medium text-gray-900">{{ getLanguageName(lang) }}：</span>
-                <template
-                  v-if="getLyricsMetadata(lang).source || getLyricsMetadata(lang).translator"
-                >
-                  <span v-if="getLyricsMetadata(lang).source" class="text-gray-600">
-                    來源：{{ getLyricsMetadata(lang).source }}
-                  </span>
-                  <span
-                    v-if="getLyricsMetadata(lang).source && getLyricsMetadata(lang).translator"
-                    class="text-gray-400 mx-1"
-                    >|</span
-                  >
-                  <span v-if="getLyricsMetadata(lang).translator" class="text-gray-600">
-                    譯者：{{ getLyricsMetadata(lang).translator }}
-                  </span>
-                </template>
-                <span v-else class="text-gray-400 italic">無資訊</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Playback Controls -->
-          <div class="flex items-center justify-center gap-3 md:gap-6 mt-2 md:mt-4">
-            <!-- 上一句 -->
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-9 w-9 md:h-12 md:w-12"
-              :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex <= 0"
-              @click="goToPreviousLine"
-            >
-              <SkipBack class="w-4 h-4 md:w-6 md:h-6" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-11 w-11 md:h-16 md:w-16"
-              @click="togglePlayPause"
-            >
-              <Play v-if="!isPlaying" class="w-5 h-5 md:w-8 md:h-8" />
-              <Pause v-else class="w-5 h-5 md:w-8 md:h-8" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              class="h-9 w-9 md:h-12 md:w-12"
-              :disabled="
-                !lyricsMap[primaryLanguage]?.length ||
-                highlightedLineIndex >= (lyricsMap[primaryLanguage]?.length || 0) - 1
-              "
-              @click="goToNextLine"
-            >
-              <SkipForward class="w-4 h-4 md:w-6 md:h-6" />
-            </Button>
-          </div>
-
-          <div class="flex items-center justify-center mt-2 md:mt-4">
-            <Button
-              :variant="isRepeatCurrentLine ? 'default' : 'ghost'"
-              size="sm"
-              class="gap-2 text-xs md:text-sm"
-              :disabled="!lyricsMap[primaryLanguage]?.length"
-              @click="toggleRepeatCurrentLine"
-            >
-              <Repeat1 class="w-3 h-3 md:w-4 md:h-4" />
-              <span>重複當前句</span>
-            </Button>
           </div>
         </div>
       </div>
 
-      <!-- Lyrics Section - Below player on mobile, right side on desktop -->
-      <div
-        class="w-full lg:flex-1 flex flex-col bg-white rounded-lg md:rounded-xl shadow-sm overflow-hidden"
-      >
-        <!-- Tabs -->
-        <div class="flex items-center border-b border-gray-200 px-1 md:px-2 flex-shrink-0">
-          <button
-            v-for="tab in tabs"
-            :key="tab"
-            class="flex-1 px-3 md:px-6 py-2.5 md:py-4 text-xs md:text-sm font-medium transition-colors"
-            :class="[
-              activeTab === tab.toLowerCase()
-                ? 'text-gray-900 border-b-2 border-gray-900'
-                : 'text-gray-500 hover:text-gray-700',
-            ]"
-            @click="activeTab = tab.toLowerCase()"
-          >
-            {{ tab }}
-          </button>
+      <!-- Controls Section -->
+      <div class="p-3 md:p-6 lg:p-8 bg-white rounded-b-lg md:rounded-b-xl flex-1 overflow-y-auto">
+        <!-- Song Info -->
+        <div class="flex items-start justify-between mb-3 md:mb-6">
+          <div class="flex-1 min-w-0">
+            <!-- 歌曲標題（支援 Ruby 注音） -->
+            <h1 class="text-lg md:text-2xl font-semibold text-gray-900 mb-0.5 md:mb-1">
+              <template v-if="currentSongData?.title_payload?.ruby">
+                <template
+                  v-for="(part, partIndex) in renderTextWithRuby(
+                    currentSongData.title_payload.text,
+                    currentSongData.title_payload.ruby
+                  )"
+                  :key="partIndex"
+                >
+                  <ruby v-if="part.type === 'ruby'" class="ruby-text">
+                    <rb>{{ part.content }}</rb
+                    ><rt
+                      class="text-[0.5em] leading-tight select-none whitespace-nowrap opacity-75"
+                      >{{ part.rt }}</rt
+                    >
+                  </ruby>
+                  <template v-else>{{ part.content }}</template>
+                </template>
+              </template>
+              <template v-else>
+                {{ currentSongData?.title || '未播放歌曲' }}
+              </template>
+            </h1>
+            <!-- 標題翻譯 -->
+            <p
+              v-if="currentTitleTranslation"
+              class="text-sm md:text-lg text-gray-600 truncate mb-2 md:mb-3"
+            >
+              {{ currentTitleTranslation }}
+            </p>
+            <p class="text-xs md:text-base text-gray-500 truncate mb-2 md:mb-3">
+              {{ currentSongData?.artist || '未知藝人' }}
+            </p>
+
+            <!-- Additional Info: Composer, Lyricist, Arranger -->
+            <div class="mt-1.5 md:mt-3 space-y-0.5 md:space-y-1.5">
+              <p v-if="currentSongData?.composer" class="text-xs md:text-sm text-gray-600">
+                <span class="font-medium">作曲：{{ currentSongData.composer }}</span>
+              </p>
+              <p v-if="currentSongData?.lyricist" class="text-xs md:text-sm text-gray-600">
+                <span class="font-medium">作詞：{{ currentSongData.lyricist }}</span>
+              </p>
+              <p v-if="currentSongData?.arranger" class="text-xs md:text-sm text-gray-600">
+                <span class="font-medium">編曲：{{ currentSongData.arranger }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 md:gap-3 ml-2 md:ml-6">
+            <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
+              <Heart class="w-3.5 h-3.5 md:w-5 md:h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" class="h-7 w-7 md:h-10 md:w-10">
+              <Share2 class="w-3.5 h-3.5 md:w-5 md:h-5" />
+            </Button>
+          </div>
         </div>
 
-        <!-- Lyrics Content -->
-        <div class="flex-1 overflow-y-auto">
-          <div v-if="activeTab === '歌詞'" class="p-3 md:p-6 lg:p-8">
-            <template v-for="(_, index) in lyricsMap[primaryLanguage] || []" :key="index">
+        <!-- 歌詞來源和譯者資訊 -->
+        <div
+          v-if="availableLanguages.length > 1"
+          class="mb-3 md:mb-6 p-2.5 md:p-3 bg-gray-50 rounded-lg border border-gray-200"
+        >
+          <h3 class="text-xs font-semibold text-gray-700 mb-1.5 md:mb-2">歌詞資訊</h3>
+          <div class="space-y-1">
+            <div v-for="lang in availableLanguages.slice(1)" :key="`meta-${lang}`" class="text-xs">
+              <span class="font-medium text-gray-900">{{ getLanguageName(lang) }}：</span>
+              <template v-if="getLyricsMetadata(lang).source || getLyricsMetadata(lang).translator">
+                <span v-if="getLyricsMetadata(lang).source" class="text-gray-600">
+                  來源：{{ getLyricsMetadata(lang).source }}
+                </span>
+                <span
+                  v-if="getLyricsMetadata(lang).source && getLyricsMetadata(lang).translator"
+                  class="text-gray-400 mx-1"
+                  >|</span
+                >
+                <span v-if="getLyricsMetadata(lang).translator" class="text-gray-600">
+                  譯者：{{ getLyricsMetadata(lang).translator }}
+                </span>
+              </template>
+              <span v-else class="text-gray-400 italic">無資訊</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="flex items-center justify-center gap-3 md:gap-6 mt-2 md:mt-4">
+          <!-- 上一句 -->
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-9 w-9 md:h-12 md:w-12"
+            :disabled="!lyricsMap[primaryLanguage]?.length || highlightedLineIndex <= 0"
+            @click="goToPreviousLine"
+          >
+            <SkipBack class="w-4 h-4 md:w-6 md:h-6" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-11 w-11 md:h-16 md:w-16"
+            @click="togglePlayPause"
+          >
+            <Play v-if="!isPlaying" class="w-5 h-5 md:w-8 md:h-8" />
+            <Pause v-else class="w-5 h-5 md:w-8 md:h-8" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-9 w-9 md:h-12 md:w-12"
+            :disabled="
+              !lyricsMap[primaryLanguage]?.length ||
+              highlightedLineIndex >= (lyricsMap[primaryLanguage]?.length || 0) - 1
+            "
+            @click="goToNextLine"
+          >
+            <SkipForward class="w-4 h-4 md:w-6 md:h-6" />
+          </Button>
+        </div>
+
+        <div class="flex items-center justify-center mt-2 md:mt-4">
+          <Button
+            :variant="isRepeatCurrentLine ? 'default' : 'ghost'"
+            size="sm"
+            class="gap-2 text-xs md:text-sm"
+            :disabled="!lyricsMap[primaryLanguage]?.length"
+            @click="toggleRepeatCurrentLine"
+          >
+            <Repeat1 class="w-3 h-3 md:w-4 md:h-4" />
+            <span>重複當前句</span>
+          </Button>
+        </div>
+      </div>
+    </template>
+
+    <template #right>
+      <!-- Tabs -->
+      <div class="flex items-center border-b border-gray-200 px-1 md:px-2 flex-shrink-0">
+        <button
+          v-for="tab in tabs"
+          :key="tab"
+          class="flex-1 px-3 md:px-6 py-2.5 md:py-4 text-xs md:text-sm font-medium transition-colors"
+          :class="[
+            activeTab === tab.toLowerCase()
+              ? 'text-red-500 border-b-2 border-red-500'
+              : 'text-gray-500 hover:text-gray-700',
+          ]"
+          @click="activeTab = tab.toLowerCase()"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <!-- Lyrics Content -->
+      <div class="flex-1 overflow-y-auto">
+        <div v-if="activeTab === '歌詞'" class="p-3 md:p-6 lg:p-8">
+          <template v-for="(_, index) in lyricsMap[primaryLanguage] || []" :key="index">
+            <div
+              class="transition-all duration-50 cursor-pointer p-3 md:p-4 rounded-lg"
+              :class="[
+                highlightedLineIndex === index
+                  ? 'bg-red-50 border-l-4 border-red-500'
+                  : 'hover:bg-gray-100',
+              ]"
+              @click="seekToLine(index)"
+            >
               <div
-                class="transition-all duration-50 cursor-pointer p-3 md:p-4 rounded-lg"
-                :class="[
-                  highlightedLineIndex === index
-                    ? 'bg-red-50 border-l-4 border-red-500'
-                    : 'hover:bg-gray-100',
-                ]"
-                @click="seekToLine(index)"
+                v-for="(lang, langIndex) in availableLanguages"
+                :key="lang"
+                class="mb-1.5 md:mb-2 last:mb-0"
               >
                 <div
-                  v-for="(lang, langIndex) in availableLanguages"
-                  :key="lang"
-                  class="mb-1.5 md:mb-2 last:mb-0"
+                  :class="[
+                    // 第一個（主要語言）用大字體粗體
+                    langIndex === 0 ? 'text-base md:text-lg font-medium' : 'text-sm md:text-base',
+                    // 高亮時使用紅色
+                    highlightedLineIndex === index ? 'text-red-500' : 'text-gray-900',
+                    langIndex > 0 && 'opacity-80',
+                  ]"
                 >
-                  <div
-                    :class="[
-                      // 第一個（主要語言）用大字體粗體
-                      langIndex === 0 ? 'text-base md:text-lg font-medium' : 'text-sm md:text-base',
-                      // 高亮時使用紅色
-                      highlightedLineIndex === index ? 'text-red-500' : 'text-gray-900',
-                      langIndex > 0 && 'opacity-80',
-                    ]"
-                  >
-                    <!-- 渲染帶 Ruby 注音的歌詞 -->
-                    <template v-if="lyricsMap[lang]?.[index]?.ruby">
-                      <template
-                        v-for="(part, partIndex) in renderTextWithRuby(
-                          lyricsMap[lang][index].text,
-                          lyricsMap[lang][index].ruby
-                        )"
-                        :key="partIndex"
-                      >
-                        <ruby v-if="part.type === 'ruby'" class="ruby-text">
-                          <rb>{{ part.content }}</rb
-                          ><rt
-                            class="text-[0.7em] leading-tight select-none whitespace-nowrap opacity-75"
-                            :class="highlightedLineIndex === index ? 'opacity-85' : ''"
-                            >{{ part.rt }}</rt
-                          >
-                        </ruby>
-                        <template v-else>{{ part.content }}</template>
-                      </template>
+                  <!-- 渲染帶 Ruby 注音的歌詞 -->
+                  <template v-if="lyricsMap[lang]?.[index]?.ruby">
+                    <template
+                      v-for="(part, partIndex) in renderTextWithRuby(
+                        lyricsMap[lang][index].text,
+                        lyricsMap[lang][index].ruby
+                      )"
+                      :key="partIndex"
+                    >
+                      <ruby v-if="part.type === 'ruby'" class="ruby-text">
+                        <rb>{{ part.content }}</rb
+                        ><rt
+                          class="text-[0.7em] leading-tight select-none whitespace-nowrap opacity-75"
+                          :class="highlightedLineIndex === index ? 'opacity-85' : ''"
+                          >{{ part.rt }}</rt
+                        >
+                      </ruby>
+                      <template v-else>{{ part.content }}</template>
                     </template>
-                    <!-- 無 Ruby 注音的普通文字 -->
-                    <template v-else>
-                      {{ lyricsMap[lang]?.[index]?.text || '' }}
-                    </template>
-                  </div>
+                  </template>
+                  <!-- 無 Ruby 注音的普通文字 -->
+                  <template v-else>
+                    {{ lyricsMap[lang]?.[index]?.text || '' }}
+                  </template>
                 </div>
               </div>
-              <hr
-                v-if="index < (lyricsMap[primaryLanguage]?.length || 0) - 1"
-                class="my-2 border-gray-200"
-              />
-            </template>
-          </div>
+            </div>
+            <hr
+              v-if="index < (lyricsMap[primaryLanguage]?.length || 0) - 1"
+              class="my-2 border-gray-200"
+            />
+          </template>
+        </div>
 
-          <div v-else-if="activeTab === '留言'" class="text-center text-gray-500 py-12 md:py-16">
-            <p class="text-sm md:text-base">暫無留言</p>
-          </div>
+        <div v-else-if="activeTab === '留言'" class="text-center text-gray-500 py-12 md:py-16">
+          <p class="text-sm md:text-base">暫無留言</p>
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </NuxtLayout>
 </template>
 
 <script setup>
@@ -281,6 +264,10 @@ import { Play, Pause, Heart, Share2, SkipBack, SkipForward, Repeat1 } from 'luci
 import { ref, computed, watch } from 'vue'
 import Button from '~/components/ui/Button.vue'
 import { getLanguageName } from '~/utils/languages'
+
+definePageMeta({
+  layout: false,
+})
 
 const router = useRouter()
 const route = useRoute()
