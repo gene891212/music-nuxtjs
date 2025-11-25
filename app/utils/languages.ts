@@ -5,8 +5,7 @@
 /**
  * 支援的語言代碼
  */
-export type LanguageCode = 'zh' | 'en' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'ru'
-
+export type LanguageCode = 'ja' | 'zh' | 'en'
 /**
  * 語言代碼對應的顯示名稱
  */
@@ -14,11 +13,6 @@ export const LANGUAGE_MAP: Record<LanguageCode, string> = {
   ja: '日本語',
   zh: '中文',
   en: 'English',
-  ko: '한국어',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  ru: 'Русский',
 }
 
 /**
