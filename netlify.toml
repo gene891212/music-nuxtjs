@@ -1,0 +1,14 @@
+[build]
+  command = "pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NETLIFY_USE_PNPM = "true"
+  NODE_VERSION = "20"
+  NITRO_PRESET = "netlify"
+  SECRETS_SCAN_OMIT_KEYS = "SUPABASE_KEY,SUPABASE_URL"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
